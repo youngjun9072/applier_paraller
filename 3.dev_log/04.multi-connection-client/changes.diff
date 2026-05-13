@@ -1,0 +1,26 @@
+diff --git a/cs/CMakeLists.txt b/cs/CMakeLists.txt
+index 029a2ae03..f015c2563 100644
+--- a/cs/CMakeLists.txt
++++ b/cs/CMakeLists.txt
+@@ -574,7 +574,7 @@ add_library(cubridcs SHARED
+   )
+ set_target_properties(cubridcs PROPERTIES SOVERSION "${CUBRID_MAJOR_VERSION}.${CUBRID_MINOR_VERSION}")
+ 
+-target_compile_definitions(cubridcs PRIVATE CS_MODE CUBRID_EXPORTING ${COMMON_DEFS})
++target_compile_definitions(cubridcs PRIVATE CS_MODE CUBRID_EXPORTING MULTI_CONN_TO_A_SERVER ${COMMON_DEFS})
+ if(WIN32)
+   set_source_files_properties(${HEAPLAYERS_DIR}/customheaps.cpp PROPERTIES COMPILE_FLAGS -Od)
+   SET_SOURCE_FILES_PROPERTIES(
+diff --git a/sa/CMakeLists.txt b/sa/CMakeLists.txt
+index 1ed7f905b..e51ce2d84 100644
+--- a/sa/CMakeLists.txt
++++ b/sa/CMakeLists.txt
+@@ -715,7 +715,7 @@ add_library(cubridsa SHARED
+   )
+ set_target_properties(cubridsa PROPERTIES SOVERSION "${CUBRID_MAJOR_VERSION}.${CUBRID_MINOR_VERSION}")
+ 
+-target_compile_definitions(cubridsa PRIVATE SA_MODE CUBRID_EXPORTING ${COMMON_DEFS})
++target_compile_definitions(cubridsa PRIVATE SA_MODE CUBRID_EXPORTING MULTI_CONN_TO_A_SERVER ${COMMON_DEFS})
+ if(WIN32)
+   set_source_files_properties(${BASE_DIR}/message_catalog.c PROPERTIES COMPILE_FLAGS -DNDEBUG)
+   set_source_files_properties(${HEAPLAYERS_DIR}/customheaps.cpp PROPERTIES COMPILE_FLAGS -Od)

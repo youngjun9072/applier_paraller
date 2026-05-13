@@ -52,3 +52,26 @@ _(작성 예정)_
 
 - 파일 동시 접근 시 I/O 병목 가능.
 - 캐시 & 버퍼 페이지 참조 시 lock 필요할 수 있음.
+
+## 3. Dev Log
+
+> 상세: [`3.dev_log/`](3.dev_log/)
+
+### Step 1. 병렬화 개발 로그
+
+> 기간: 2026-04-15 ~ 2026-04-30 · 브랜치: `feature/parallel_applylogdb_poc` (vs `develop`) · 변경 규모: 46개 파일, +4,038 / −907 · 항목별 상세는 [`3.dev_log/`](3.dev_log/) 참고.
+
+기존 단일 흐름이던 `applylogdb`를 LogReader와 다수의 ApplyWorker로 쪼개는 구조 개편을 PoC 수준으로 진행했다. transaction 단위 worker 큐를 도입해 commit log 감지 시점에 dispatch 하도록 만들고, worker 완료 보고 경로를 reader의 dispatch 경로와 분리해 서로 막지 않도록 했다.
+
+병렬 동작의 핵심은 worker 간 공유 상태를 좁히는 일이었다. 따라서 error context, client session, client transaction, worker-local 상태 순으로 격리 범위를 단계적으로 넓혔다. 이 과정에서 단일 스레드 가정으로 묶여 있던 전역 변수들(`locator_Keep` cache, 일부 client 전역, scratch 버퍼)을 thread-local 저장소로 옮기고, multi-connection 클라이언트를 활성화해 worker마다 슬레이브에 독립 세션을 갖도록 했다. worker 동시 출발 시 드러난 초기화 race는 startup 직렬화 가드로 막았고, 다수 worker가 마스터에 별도 applier처럼 보이지 않도록 HA state notification은 worker 세션에서 차단했다.
+
+처리량 측면에서는 worker 수를 1 → 2 → 4 → 10 으로 단계적으로 확장했고, dispatch-order FIFO를 도입했다. 결과 수집은 out-of-order 를 허용하되, 외부 노출 LSA는 reader가 커밋 LSA 기준 in-order 로만 갱신하도록 retire order를 보존했다. long transaction 처리에서는 SYSOP_END 등 sysop record 처리를 commit dispatch 시점으로 미루어 중간 이벤트가 worker 분기에 끼어들지 않게 했다.
+
+운영 관점에서는 TLS 확장과 worker 증가로 인한 VSZ 급증을 완화하기 위해 `max_mem_size` 하한을 임시로 끌어올렸고, 병렬 동작을 정량 관찰하기 위해 reader/worker 처리량, 큐 깊이, flush·statement 컨텍스트, cache buffer, timing breakdown 등 다층 계측 로그를 매크로 게이트로 묶어 추가했다.
+
+## 4. TODO
+
+> 상세: [`4.todo/`](4.todo/)
+
+- [`poc_design_comparison/`](4.todo/poc_design_comparison/) — PoC 디자인 문서와 실제 구현 차이 비교
+- [`cs_lib_comparison/`](4.todo/cs_lib_comparison/) — cs_lib 비교

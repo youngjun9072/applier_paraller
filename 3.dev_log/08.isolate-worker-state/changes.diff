@@ -1,0 +1,1499 @@
+diff --git a/cubrid-cci b/cubrid-cci
+index ef5470ffa..85613946c 160000
+--- a/cubrid-cci
++++ b/cubrid-cci
+@@ -1 +1 @@
+-Subproject commit ef5470ffae4aa934425145e393fefc81899c84a7
++Subproject commit 85613946c95be89079e9031d750b82ae33512798
+diff --git a/src/compat/db.h b/src/compat/db.h
+index b126bfb73..1d002623b 100644
+--- a/src/compat/db.h
++++ b/src/compat/db.h
+@@ -41,6 +41,7 @@
+ #include "log_comm.h"
+ #include "dbtype_def.h"
+ #include "db_admin.h"
++#include "db_multi_threads_connections.h"
+ 
+ /* GLOBAL STATE */
+ #define DB_CONNECTION_STATUS_NOT_CONNECTED      0
+@@ -48,10 +49,10 @@
+ #define DB_CONNECTION_STATUS_RESET              -1
+ extern int db_Connect_status;
+ 
+-extern SESSION_ID db_Session_id;
+-extern bool db_Keep_session;
++extern CUB_THREAD_LOCAL SESSION_ID db_Session_id;
++extern CUB_THREAD_LOCAL bool db_Keep_session;
+ 
+-extern int db_Row_count;
++extern CUB_THREAD_LOCAL int db_Row_count;
+ 
+ #if !defined(_DB_DISABLE_MODIFICATIONS_)
+ #define _DB_DISABLE_MODIFICATIONS_
+diff --git a/src/compat/db_macro.c b/src/compat/db_macro.c
+index d806c024f..000c8fb94 100644
+--- a/src/compat/db_macro.c
++++ b/src/compat/db_macro.c
+@@ -78,10 +78,10 @@ struct valcnv_buffer
+   unsigned char *bytes;
+ };
+ 
+-SESSION_ID db_Session_id = DB_EMPTY_SESSION;
+-bool db_Keep_session = false;
++CUB_THREAD_LOCAL SESSION_ID db_Session_id = DB_EMPTY_SESSION;
++CUB_THREAD_LOCAL bool db_Keep_session = false;
+ 
+-int db_Row_count = DB_ROW_COUNT_NOT_SET;
++CUB_THREAD_LOCAL int db_Row_count = DB_ROW_COUNT_NOT_SET;
+ 
+ static int valcnv_Max_set_elements = 10;
+ 
+diff --git a/src/object/authenticate.c b/src/object/authenticate.c
+index 19086a3c6..22bd5a480 100644
+--- a/src/object/authenticate.c
++++ b/src/object/authenticate.c
+@@ -40,6 +40,7 @@
+ 
+ #include <stack>
+ 
++#include "db_multi_threads_connections.h"
+ #include "porting.h"
+ #include "misc_string.h"
+ #include "memory_alloc.h"
+@@ -84,7 +85,7 @@
+  *
+  * 
+  */
+-static authenticate_context *au_ctx_obj = nullptr;
++static CUB_THREAD_LOCAL authenticate_context *au_ctx_obj = nullptr;
+ 
+ int
+ au_login (const char *name, const char *password, bool ignore_dba_privilege)
+diff --git a/src/object/deduplicate_key.c b/src/object/deduplicate_key.c
+index de24ee487..a5edcc530 100644
+--- a/src/object/deduplicate_key.c
++++ b/src/object/deduplicate_key.c
+@@ -29,6 +29,7 @@
+ #include <assert.h>
+ 
+ #include "dbtype.h"
++#include "db_multi_threads_connections.h"
+ #if defined(SERVER_MODE) || defined(SA_MODE)
+ #include "object_representation.h"
+ #include "object_primitive.h"
+@@ -174,8 +175,8 @@ dk_get_deduplicate_key_value (OID * rec_oid, int att_id, DB_VALUE * value)
+ #if !defined(SERVER_MODE)
+ 
+ // SM_ATTRIBUTE and DB_ATTRIBUTE are the same thing.
+-static SM_ATTRIBUTE *st_sm_atts[COUNT_OF_DEDUPLICATE_KEY_LEVEL];
+-static bool st_sm_atts_init = false;
++static CUB_THREAD_LOCAL SM_ATTRIBUTE *st_sm_atts[COUNT_OF_DEDUPLICATE_KEY_LEVEL];
++static CUB_THREAD_LOCAL bool st_sm_atts_init = false;
+ 
+ static void
+ dk_sm_attribute_finalized ()
+diff --git a/src/object/quick_fit.c b/src/object/quick_fit.c
+index e43c03b48..2664fba99 100644
+--- a/src/object/quick_fit.c
++++ b/src/object/quick_fit.c
+@@ -28,6 +28,7 @@
+ 
+ #include "customheaps.h"
+ #include "memory_alloc.h"
++#include "db_multi_threads_connections.h"
+ #include "quick_fit.h"
+ #include "memory_alloc.h"
+ #if defined(WINDOWS)
+@@ -38,9 +39,9 @@
+ #error Does not belong to server module
+ #endif
+ 
+-static HL_HEAPID ws_Heap_id = 0;
++static CUB_THREAD_LOCAL HL_HEAPID ws_Heap_id = 0;
+ 
+-static pthread_t ws_Heap_Owner_id = (pthread_t) (-1);
++static CUB_THREAD_LOCAL pthread_t ws_Heap_Owner_id = (pthread_t) (-1);
+ static int use_utility_theads = 0;
+ 
+ #define DB_IS_UTILITY_THREAD() ((ws_Heap_id == 0 || use_utility_theads == 0) ? false : (pthread_self () != ws_Heap_Owner_id))
+diff --git a/src/object/schema_manager.c b/src/object/schema_manager.c
+index a34c411ef..8169d7400 100644
+--- a/src/object/schema_manager.c
++++ b/src/object/schema_manager.c
+@@ -244,16 +244,16 @@ SM_DESCRIPTOR *sm_Descriptors = NULL;
+ 
+ /* ROOT_CLASS GLOBALS */
+ /* Global root class structure */
+-ROOT_CLASS sm_Root_class;
++CUB_THREAD_LOCAL ROOT_CLASS sm_Root_class;
+ 
+ /* Global MOP for the root class object.  Used by the locator */
+-MOP sm_Root_class_mop = NULL;
++CUB_THREAD_LOCAL MOP sm_Root_class_mop = NULL;
+ 
+ /* Name of the root class */
+ const char *sm_Root_class_name = ROOTCLASS_NAME;
+ 
+ /* Heap file identifier for the root class */
+-HFID *sm_Root_class_hfid = &sm_Root_class.header.ch_heap;
++CUB_THREAD_LOCAL HFID *sm_Root_class_hfid = &sm_Root_class.header.ch_heap;
+ 
+ static unsigned int local_schema_version = 0;
+ static unsigned int global_schema_version = 0;
+diff --git a/src/object/schema_manager.h b/src/object/schema_manager.h
+index dcaff6b83..6c44c151d 100644
+--- a/src/object/schema_manager.h
++++ b/src/object/schema_manager.h
+@@ -83,12 +83,12 @@ struct sm_constraint_info
+   SM_INDEX_STATUS index_status;	// Used to save index_status in case of rebuild or moving the constraint
+ };
+ 
+-extern ROOT_CLASS sm_Root_class;
++extern CUB_THREAD_LOCAL ROOT_CLASS sm_Root_class;
+ 
+ extern const char TEXT_CONSTRAINT_PREFIX[];
+ 
+-extern MOP sm_Root_class_mop;
+-extern HFID *sm_Root_class_hfid;
++extern CUB_THREAD_LOCAL MOP sm_Root_class_mop;
++extern CUB_THREAD_LOCAL HFID *sm_Root_class_hfid;
+ extern const char *sm_Root_class_name;
+ 
+ extern int sm_finish_class (SM_TEMPLATE * template_, MOP * classmop);
+diff --git a/src/object/set_object.c b/src/object/set_object.c
+index f16b53712..56b479345 100644
+--- a/src/object/set_object.c
++++ b/src/object/set_object.c
+@@ -33,6 +33,7 @@
+ #if !defined (SERVER_MODE)
+ #include "authenticate.h"
+ #endif // not SERVER_MODE
++#include "db_multi_threads_connections.h"
+ #include "db_value_printer.hpp"
+ #include "dbtype.h"
+ #include "error_manager.h"
+@@ -95,9 +96,9 @@ static int debug_level = 0;
+ static long collection_quick_offset = 0;	/* inited by col_initialize */
+ 
+ /* Area for allocation of set reference structures */
+-AREA *Set_Ref_Area = NULL;
++CUB_THREAD_LOCAL AREA *Set_Ref_Area = NULL;
+ /* Area for allocation of set object structures */
+-AREA *Set_Obj_Area = NULL;
++CUB_THREAD_LOCAL AREA *Set_Obj_Area = NULL;
+ 
+ #define CHECKNULL_ERR(thing) \
+   if ((thing) == NULL) \
+diff --git a/src/object/trigger_manager.c b/src/object/trigger_manager.c
+index c7eb45360..dc4a18c6d 100644
+--- a/src/object/trigger_manager.c
++++ b/src/object/trigger_manager.c
+@@ -139,30 +139,30 @@ const char *TR_ATT_COMMENT = "comment";
+ const char *TR_ATT_CREATED_TIME = "created_time";
+ const char *TR_ATT_UPDATED_TIME = "updated_time";
+ 
+-int tr_Current_depth = 0;
+-int tr_Maximum_depth = TR_MAX_RECURSION_LEVEL;
+-OID tr_Stack[TR_MAX_RECURSION_LEVEL + 1];
++CUB_THREAD_LOCAL int tr_Current_depth = 0;
++CUB_THREAD_LOCAL int tr_Maximum_depth = TR_MAX_RECURSION_LEVEL;
++static CUB_THREAD_LOCAL OID tr_Stack[TR_MAX_RECURSION_LEVEL + 1];
+ 
+-bool tr_Invalid_transaction = false;
+-char tr_Invalid_transaction_trigger[SM_MAX_IDENTIFIER_LENGTH + 2];
++CUB_THREAD_LOCAL bool tr_Invalid_transaction = false;
++CUB_THREAD_LOCAL char tr_Invalid_transaction_trigger[SM_MAX_IDENTIFIER_LENGTH + 2];
+ 
+-bool tr_Trace = true;
++CUB_THREAD_LOCAL bool tr_Trace = true;
+ 
+-TR_DEFERRED_CONTEXT *tr_Deferred_activities = NULL;
+-TR_DEFERRED_CONTEXT *tr_Deferred_activities_tail = NULL;
++CUB_THREAD_LOCAL TR_DEFERRED_CONTEXT *tr_Deferred_activities = NULL;
++CUB_THREAD_LOCAL TR_DEFERRED_CONTEXT *tr_Deferred_activities_tail = NULL;
+ 
+-static int tr_User_triggers_valid = 0;
+-static int tr_User_triggers_modified = 0;
+-static TR_TRIGLIST *tr_User_triggers = NULL;
++static CUB_THREAD_LOCAL int tr_User_triggers_valid = 0;
++static CUB_THREAD_LOCAL int tr_User_triggers_modified = 0;
++static CUB_THREAD_LOCAL TR_TRIGLIST *tr_User_triggers = NULL;
+ 
+-static TR_TRIGLIST *tr_Uncommitted_triggers = NULL;
+-static TR_SCHEMA_CACHE *tr_Schema_caches = NULL;
++static CUB_THREAD_LOCAL TR_TRIGLIST *tr_Uncommitted_triggers = NULL;
++static CUB_THREAD_LOCAL TR_SCHEMA_CACHE *tr_Schema_caches = NULL;
+ 
+ /*
+  * Global trigger firing state flag, used to determine if triggers are fired.
+  * This can be modified using tr_set_execution_enabled().
+  */
+-static bool tr_Execution_enabled = true;
++static CUB_THREAD_LOCAL bool tr_Execution_enabled = true;
+ 
+ /*
+  * tr_object_map
+@@ -174,7 +174,7 @@ static bool tr_Execution_enabled = true;
+  *
+  */
+ 
+-static MHT_TABLE *tr_object_map = NULL;
++static CUB_THREAD_LOCAL MHT_TABLE *tr_object_map = NULL;
+ 
+ static const char *time_as_string (DB_TRIGGER_TIME tr_time);
+ static char *tr_process_name (const char *name_string);
+diff --git a/src/object/trigger_manager.h b/src/object/trigger_manager.h
+index 8ae6e8229..54ae7b951 100644
+--- a/src/object/trigger_manager.h
++++ b/src/object/trigger_manager.h
+@@ -28,6 +28,7 @@
+ #include "memory_alloc.h"
+ #include "dbtype_def.h"
+ #include "class_object.h"
++#include "db_multi_threads_connections.h"
+ 
+ /*
+  * TR_LOWEST_PRIORITY
+@@ -224,21 +225,21 @@ extern const char *TR_ATT_COMMENT;
+ extern const char *TR_ATT_CREATED_TIME;
+ extern const char *TR_ATT_UPDATED_TIME;
+ 
+-extern int tr_Current_depth;
+-extern int tr_Maximum_depth;
+-extern bool tr_Invalid_transaction;
+-extern char tr_Invalid_transaction_trigger[SM_MAX_IDENTIFIER_LENGTH + 2];
++extern CUB_THREAD_LOCAL int tr_Current_depth;
++extern CUB_THREAD_LOCAL int tr_Maximum_depth;
++extern CUB_THREAD_LOCAL bool tr_Invalid_transaction;
++extern CUB_THREAD_LOCAL char tr_Invalid_transaction_trigger[SM_MAX_IDENTIFIER_LENGTH + 2];
+ 
+-extern bool tr_Trace;
++extern CUB_THREAD_LOCAL bool tr_Trace;
+ 
+-extern TR_DEFERRED_CONTEXT *tr_Deferred_activities;
+-extern TR_DEFERRED_CONTEXT *tr_Deferred_activities_tail;
++extern CUB_THREAD_LOCAL TR_DEFERRED_CONTEXT *tr_Deferred_activities;
++extern CUB_THREAD_LOCAL TR_DEFERRED_CONTEXT *tr_Deferred_activities_tail;
+ 
+-extern int tr_Recursion_level;
+-extern int tr_Recursion_level_max;
++extern CUB_THREAD_LOCAL int tr_Recursion_level;
++extern CUB_THREAD_LOCAL int tr_Recursion_level_max;
+ 
+-extern TR_TRIGLIST *tr_Deferred_triggers;
+-extern TR_TRIGLIST *tr_Deferred_triggers_tail;
++extern CUB_THREAD_LOCAL TR_TRIGLIST *tr_Deferred_triggers;
++extern CUB_THREAD_LOCAL TR_TRIGLIST *tr_Deferred_triggers_tail;
+ 
+ /*
+ * EVAL_PREFIX, EVAL_SUFFIX
+diff --git a/src/object/work_space.c b/src/object/work_space.c
+index 65b877dec..6344a4665 100644
+--- a/src/object/work_space.c
++++ b/src/object/work_space.c
+@@ -72,7 +72,7 @@ extern unsigned int db_on_server;
+  *    Linked list of mops to be reset at commit/abort.
+  */
+ 
+-MOP ws_Commit_mops = NULL;
++CUB_THREAD_LOCAL MOP ws_Commit_mops = NULL;
+ 
+ /*
+  * ws_Mop_table
+@@ -81,14 +81,14 @@ MOP ws_Commit_mops = NULL;
+  *    transaction manager.
+  */
+ 
+-WS_MOP_TABLE_ENTRY *ws_Mop_table = NULL;
++CUB_THREAD_LOCAL WS_MOP_TABLE_ENTRY *ws_Mop_table = NULL;
+ 
+ /*
+  * ws_Mop_table_size
+  *    Records the current size of the OID to MOP hash table.
+  */
+ 
+-unsigned int ws_Mop_table_size = 0;
++CUB_THREAD_LOCAL unsigned int ws_Mop_table_size = 0;
+ 
+ /*
+  * ws_Resident_classes
+@@ -99,7 +99,7 @@ unsigned int ws_Mop_table_size = 0;
+  *    list.
+  */
+ 
+-DB_OBJLIST *ws_Resident_classes = NULL;
++CUB_THREAD_LOCAL DB_OBJLIST *ws_Resident_classes = NULL;
+ 
+ /*
+  * ws_Stats
+@@ -107,9 +107,9 @@ DB_OBJLIST *ws_Resident_classes = NULL;
+  *    This contains random information about the state of the workspace.
+  */
+ 
+-WS_STATISTICS ws_Stats = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
++CUB_THREAD_LOCAL WS_STATISTICS ws_Stats = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+ 
+-int ws_Num_dirty_mop = 0;
++CUB_THREAD_LOCAL int ws_Num_dirty_mop = 0;
+ 
+ /*
+  * We used to keep a global dirty list here. But for more efficient traversals
+@@ -118,7 +118,7 @@ int ws_Num_dirty_mop = 0;
+  * and visit each class' dirty list. The dirty flag here is consulted by
+  * ws_has_updated to determine if there are dirty objects in this workspace.
+  */
+-static bool Ws_dirty;
++static CUB_THREAD_LOCAL bool Ws_dirty;
+ 
+ /*
+  * Null_object
+@@ -130,7 +130,7 @@ static bool Ws_dirty;
+  *    avoids having to keep an extra bit in the MOP structre.
+  */
+ 
+-static MOP Null_object;
++static CUB_THREAD_LOCAL MOP Null_object;
+ 
+ /*
+  * Classname_cache
+@@ -139,14 +139,14 @@ static MOP Null_object;
+  *    find class OIDs.
+  */
+ 
+-static MHT_TABLE *Classname_cache = NULL;
++static CUB_THREAD_LOCAL MHT_TABLE *Classname_cache = NULL;
+ 
+ 
+ /*
+  * Objlist_area
+  *    Area for allocating external object list links.
+  */
+-static AREA *Objlist_area = NULL;
++static CUB_THREAD_LOCAL AREA *Objlist_area = NULL;
+ 
+ /* When MVCC is enabled, fetched objects are not locked. Which means next
+  * fetch call would go to server and check if object was changed. However,
+@@ -154,7 +154,7 @@ static AREA *Objlist_area = NULL;
+  * checking on server, mark fetched object with the snapshot version and
+  * don't re-fetch until snapshot version is changed.
+  */
+-static unsigned int ws_MVCC_snapshot_version = 0;
++static CUB_THREAD_LOCAL unsigned int ws_MVCC_snapshot_version = 0;
+ 
+ /*
+  * ws_area_init
+@@ -162,8 +162,8 @@ static unsigned int ws_MVCC_snapshot_version = 0;
+  *
+  */
+ 
+-int ws_Error_ignore_list[-ER_LAST_ERROR];
+-int ws_Error_ignore_count = 0;
++CUB_THREAD_LOCAL int ws_Error_ignore_list[-ER_LAST_ERROR];
++CUB_THREAD_LOCAL int ws_Error_ignore_count = 0;
+ 
+ #define OBJLIST_AREA_COUNT 4096
+ 
+@@ -5279,6 +5279,16 @@ ws_repl::ws_init_repl_objs (void)
+   m_Repl_objs.num_items = 0;
+ }
+ 
++/*
++ * ws_get_repl_obj_count() -
++ *    return: number of pending replication objects
++ */
++int
++ws_repl::ws_get_repl_obj_count (void) const
++{
++  return m_Repl_objs.num_items;
++}
++
+ /*
+  * ws_get_repl_obj_from_list() -
+  *    return: repl object
+diff --git a/src/object/work_space.h b/src/object/work_space.h
+index 163ff15fb..2a35a2d32 100644
+--- a/src/object/work_space.h
++++ b/src/object/work_space.h
+@@ -33,6 +33,7 @@
+ #include "quick_fit.h"
+ #include "locator.h"
+ #include "dbtype_def.h"
++#include "db_multi_threads_connections.h"
+ 
+ #if defined (SERVER_MODE)
+ // cppcheck-suppress preprocessorErrorDirective
+@@ -454,14 +455,14 @@ struct ws_mop_table_entry
+ /*
+  * WORKSPACE GLOBALS
+  */
+-extern WS_MOP_TABLE_ENTRY *ws_Mop_table;
+-extern unsigned int ws_Mop_table_size;
+-extern DB_OBJLIST *ws_Resident_classes;
+-extern MOP ws_Commit_mops;
+-extern WS_STATISTICS ws_Stats;
+-extern int ws_Num_dirty_mop;
+-extern int ws_Error_ignore_list[-ER_LAST_ERROR];
+-extern int ws_Error_ignore_count;
++extern CUB_THREAD_LOCAL WS_MOP_TABLE_ENTRY *ws_Mop_table;
++extern CUB_THREAD_LOCAL unsigned int ws_Mop_table_size;
++extern CUB_THREAD_LOCAL DB_OBJLIST *ws_Resident_classes;
++extern CUB_THREAD_LOCAL MOP ws_Commit_mops;
++extern CUB_THREAD_LOCAL WS_STATISTICS ws_Stats;
++extern CUB_THREAD_LOCAL int ws_Num_dirty_mop;
++extern CUB_THREAD_LOCAL int ws_Error_ignore_list[-ER_LAST_ERROR];
++extern CUB_THREAD_LOCAL int ws_Error_ignore_count;
+ 
+ /*
+  *  WORKSPACE FUNCTIONS
+@@ -695,6 +696,7 @@ public:
+   void ws_init_repl_objs (void);
+   void ws_clear_all_repl_objs (void);
+   void ws_free_repl_obj (WS_REPL_OBJ * obj);
++  int ws_get_repl_obj_count (void) const;
+   WS_REPL_OBJ *ws_get_repl_obj_from_list (void);
+   void ws_set_repl_error_into_error_link (LC_COPYAREA_ONEOBJ * obj, char *content_ptr);
+   WS_REPL_FLUSH_ERR *ws_get_repl_error_from_error_link (void);
+diff --git a/src/transaction/boot_cl.c b/src/transaction/boot_cl.c
+index 27ec490ea..583c2935b 100644
+--- a/src/transaction/boot_cl.c
++++ b/src/transaction/boot_cl.c
+@@ -119,7 +119,7 @@
+ #define BOOT_NO_OPT_CAP                 0
+ #define BOOT_CHECK_HA_DELAY_CAP         NET_CAP_HA_REPL_DELAY
+ 
+-static BOOT_SERVER_CREDENTIAL boot_Server_credential = {
++static CUB_THREAD_LOCAL BOOT_SERVER_CREDENTIAL boot_Server_credential = {
+   /* db_full_name */ NULL, /* host_name */ NULL, /* lob_path */ NULL,
+   /* process_id */ -1,
+   /* root_class_oid */ {NULL_PAGEID, NULL_SLOTID, NULL_VOLID},
+diff --git a/src/transaction/log_applier.c b/src/transaction/log_applier.c
+index fcc69fe4a..18961f2a8 100644
+--- a/src/transaction/log_applier.c
++++ b/src/transaction/log_applier.c
+@@ -291,6 +291,17 @@ struct la_apply_task
+   time_t log_record_time;
+ };
+ 
++typedef struct la_apply_stats LA_APPLY_STATS;
++struct la_apply_stats
++{
++  unsigned long insert_counter;
++  unsigned long update_counter;
++  unsigned long delete_counter;
++  unsigned long schema_counter;
++  unsigned long fail_counter;
++  int num_unflushed;
++};
++
+ typedef struct la_apply_result LA_APPLY_RESULT;
+ struct la_apply_result
+ {
+@@ -298,7 +309,9 @@ struct la_apply_result
+   int rectype;
+   int error;
+   LOG_LSA commit_lsa;
++  LOG_LSA committed_rep_lsa;
+   time_t log_record_time;
++  LA_APPLY_STATS stats;
+ };
+ 
+ typedef struct la_worker_queue LA_WORKER_QUEUE;
+@@ -339,6 +352,7 @@ struct la_apply_worker_session
+ {
+   bool css_started;
+   bool client_registered;
++  bool client_context_started;
+   BOOT_SERVER_CREDENTIAL server_credential;
+ };
+ 
+@@ -554,6 +568,7 @@ static LA_ITEM *la_new_repl_item (LOG_LSA * lsa, LOG_LSA * target_lsa);
+ static void la_add_repl_item (LA_APPLY * apply, LA_ITEM * item);
+ 
+ static DB_VALUE *la_get_item_pk_value (LA_ITEM * item);
++static void la_clear_repl_item_key (LA_ITEM * item);
+ static LA_ITEM *la_make_repl_item (LOG_PAGE * log_pgptr, int log_type, int tranid, LOG_LSA * lsa);
+ static void la_unlink_repl_item (LA_APPLY * apply, LA_ITEM * item);
+ static void la_free_repl_item (LA_APPLY * apply, LA_ITEM * item);
+@@ -584,20 +599,22 @@ static int la_get_relocation_recdes (LOG_RECORD_HEADER * lrec, LOG_PAGE * pgptr,
+ 				     void **logs, char **rec_type, RECDES * recdes);
+ static int la_get_recdes (LOG_LSA * lsa, LOG_PAGE * pgptr, RECDES * recdes, unsigned int *rcvindex, char *rec_type,
+ 			  bool is_mvcc_class);
+-static void la_log_apply_error (const char *op_name, int err_id, LA_ITEM * item, int error);
++static void la_log_apply_error (const char *op_name, int err_id, LA_ITEM * item, int error, LA_APPLY_STATS * stats);
+ static void la_set_error_sql_log (const char *class_name, DB_VALUE * key_val);
+ static int la_write_delete_sql_log (LA_ITEM * item, DB_OBJECT * class_obj);
+ static int la_write_update_sql_log (LA_ITEM * item, DB_OBJECT * class_obj, RECDES * recdes);
+ static int la_write_insert_sql_log (LA_ITEM * item, DB_OBJECT * class_obj, RECDES * recdes);
+-static int la_apply_delete_log (LA_ITEM * item);
+-static int la_apply_update_log (LA_ITEM * item);
+-static int la_apply_insert_log (LA_ITEM * item);
++static int la_apply_delete_log (LA_ITEM * item, LA_APPLY_STATS * stats);
++static int la_apply_update_log (LA_ITEM * item, LA_APPLY_STATS * stats);
++static int la_apply_insert_log (LA_ITEM * item, LA_APPLY_STATS * stats);
+ static int la_update_query_execute (const char *sql, bool au_disable);
+ static int la_update_query_execute_with_values (const char *sql, int arg_count, DB_VALUE * vals, bool au_disable);
+-static int la_apply_statement_log (LA_ITEM * item);
+-static int la_apply_repl_log (int tranid, int rectype, LOG_LSA * commit_lsa, int *total_rows, LOG_PAGEID final_pageid);
++static int la_apply_statement_log (LA_ITEM * item, LA_APPLY_STATS * stats);
++static int la_apply_repl_log (int tranid, int rectype, LOG_LSA * commit_lsa, int *total_rows, LOG_PAGEID final_pageid,
++			      LOG_LSA * committed_rep_lsa, LA_APPLY_STATS * stats);
+ static int la_apply_commit_list (LOG_LSA * lsa, LOG_PAGEID final_pageid);
+ static void la_free_repl_items_by_tranid (int tranid);
++static void la_free_commit_node_by_tranid (int tranid);
+ static int la_log_record_process (LOG_RECORD_HEADER * lrec, LOG_LSA * final, LOG_PAGE * pg_ptr);
+ static int la_change_state (void);
+ static int la_log_commit (bool update_commit_time);
+@@ -620,7 +637,7 @@ static LA_ITEM *la_get_next_repl_item (LA_ITEM * item, bool is_long_trans, LOG_L
+ static LA_ITEM *la_get_next_repl_item_from_list (LA_ITEM * item);
+ static LA_ITEM *la_get_next_repl_item_from_log (LA_ITEM * item, LOG_LSA * last_lsa);
+ 
+-static int la_commit_transaction (void);
++static int la_commit_transaction (unsigned long long applied_item_count);
+ static int la_find_last_deleted_arv_num (void);
+ 
+ static bool la_restart_on_bulk_flush_error (int errid);
+@@ -631,16 +648,21 @@ static int la_delay_replica (time_t eot_time);
+ static float la_get_avg (int *array, int size);
+ static void la_get_adaptive_time_commit_interval (int *time_commit_interval, int *delay_hist);
+ 
+-static int la_flush_repl_items (bool immediate);
++static int la_flush_repl_items (bool immediate, LA_APPLY_STATS * stats);
+ static bool la_is_supported_poc_item (LA_ITEM * item);
+ static int la_reader_commit_apply_info (void);
+ static void *la_apply_worker_main (void *arg);
+ static void la_apply_worker_init (LA_APPLY_WORKER * worker);
+ static void la_apply_worker_destroy (LA_APPLY_WORKER * worker);
+ static void la_init_worker_server_credential (BOOT_SERVER_CREDENTIAL * credential);
++static int la_copy_worker_credential_string (const char *source, char **copy_p);
++static int la_detach_worker_server_credential (BOOT_SERVER_CREDENTIAL * credential);
++static void la_clear_worker_server_credential_private (BOOT_SERVER_CREDENTIAL * credential);
+ static void la_clear_worker_server_credential (BOOT_SERVER_CREDENTIAL * credential);
+ static int la_apply_worker_register_client (LA_APPLY_WORKER_SESSION * session);
+ static void la_apply_worker_unregister_client (LA_APPLY_WORKER_SESSION * session);
++static int la_apply_worker_start_client_context (LA_APPLY_WORKER_SESSION * session);
++static void la_apply_worker_end_client_context (LA_APPLY_WORKER_SESSION * session);
+ static int la_apply_worker_start_session (LA_APPLY_WORKER_SESSION * session);
+ static void la_apply_worker_end_session (LA_APPLY_WORKER_SESSION * session);
+ static int la_start_apply_workers (void);
+@@ -823,8 +845,105 @@ la_init_worker_server_credential (BOOT_SERVER_CREDENTIAL * credential)
+   credential->db_charset = INTL_CODESET_NONE;
+ }
+ 
++static int
++la_copy_worker_credential_string (const char *source, char **copy_p)
++{
++  char *copy;
++  size_t length;
++
++  *copy_p = NULL;
++
++  if (source == NULL)
++    {
++      return NO_ERROR;
++    }
++
++  length = strlen (source) + 1;
++
++  copy = (char *) malloc (length);
++  if (copy == NULL)
++    {
++      er_set (ER_ERROR_SEVERITY, ARG_FILE_LINE, ER_OUT_OF_VIRTUAL_MEMORY, 1, length);
++      return ER_OUT_OF_VIRTUAL_MEMORY;
++    }
++
++  memcpy (copy, source, length);
++  *copy_p = copy;
++
++  return NO_ERROR;
++}
++
++static int
++la_detach_worker_server_credential (BOOT_SERVER_CREDENTIAL * credential)
++{
++  int error;
++  char *db_full_name = NULL;
++  char *host_name = NULL;
++  char *lob_path = NULL;
++  char *db_lang = NULL;
++
++  error = la_copy_worker_credential_string (credential->db_full_name, &db_full_name);
++  if (error != NO_ERROR)
++    {
++      goto error_return;
++    }
++
++  error = la_copy_worker_credential_string (credential->host_name, &host_name);
++  if (error != NO_ERROR)
++    {
++      goto error_return;
++    }
++
++  error = la_copy_worker_credential_string (credential->lob_path, &lob_path);
++  if (error != NO_ERROR)
++    {
++      goto error_return;
++    }
++
++  error = la_copy_worker_credential_string (credential->db_lang, &db_lang);
++  if (error != NO_ERROR)
++    {
++      goto error_return;
++    }
++
++  db_private_free_and_init (NULL, credential->db_full_name);
++  db_private_free_and_init (NULL, credential->host_name);
++  db_private_free_and_init (NULL, credential->lob_path);
++  db_private_free_and_init (NULL, credential->db_lang);
++
++  credential->db_full_name = db_full_name;
++  credential->host_name = host_name;
++  credential->lob_path = lob_path;
++  credential->db_lang = db_lang;
++
++  return NO_ERROR;
++
++error_return:
++  if (db_full_name != NULL)
++    {
++      free_and_init (db_full_name);
++    }
++
++  if (host_name != NULL)
++    {
++      free_and_init (host_name);
++    }
++
++  if (lob_path != NULL)
++    {
++      free_and_init (lob_path);
++    }
++
++  if (db_lang != NULL)
++    {
++      free_and_init (db_lang);
++    }
++
++  return error;
++}
++
+ static void
+-la_clear_worker_server_credential (BOOT_SERVER_CREDENTIAL * credential)
++la_clear_worker_server_credential_private (BOOT_SERVER_CREDENTIAL * credential)
+ {
+   if (credential->db_full_name != NULL)
+     {
+@@ -849,6 +968,32 @@ la_clear_worker_server_credential (BOOT_SERVER_CREDENTIAL * credential)
+   la_init_worker_server_credential (credential);
+ }
+ 
++static void
++la_clear_worker_server_credential (BOOT_SERVER_CREDENTIAL * credential)
++{
++  if (credential->db_full_name != NULL)
++    {
++      free_and_init (credential->db_full_name);
++    }
++
++  if (credential->host_name != NULL)
++    {
++      free_and_init (credential->host_name);
++    }
++
++  if (credential->lob_path != NULL)
++    {
++      free_and_init (credential->lob_path);
++    }
++
++  if (credential->db_lang != NULL)
++    {
++      free_and_init (credential->db_lang);
++    }
++
++  la_init_worker_server_credential (credential);
++}
++
+ static int
+ la_apply_worker_register_client (LA_APPLY_WORKER_SESSION * session)
+ {
+@@ -872,12 +1017,21 @@ la_apply_worker_register_client (LA_APPLY_WORKER_SESSION * session)
+     boot_register_client (&client_credential, lock_wait_msecs, isolation, &tran_state, &session->server_credential);
+   if (tran_index == NULL_TRAN_INDEX)
+     {
+-      la_clear_worker_server_credential (&session->server_credential);
++      la_clear_worker_server_credential_private (&session->server_credential);
+       return er_errid () == NO_ERROR ? ER_FAILED : er_errid ();
+     }
+ 
+   tran_cache_tran_settings (tran_index, lock_wait_msecs, isolation);
+   session->client_registered = true;
++
++  if (la_detach_worker_server_credential (&session->server_credential) != NO_ERROR)
++    {
++      (void) boot_unregister_client (tm_Tran_index);
++      tm_Tran_index = NULL_TRAN_INDEX;
++      session->client_registered = false;
++      la_clear_worker_server_credential_private (&session->server_credential);
++      return er_errid () == NO_ERROR ? ER_FAILED : er_errid ();
++    }
+ #endif
+ 
+   return NO_ERROR;
+@@ -898,6 +1052,83 @@ la_apply_worker_unregister_client (LA_APPLY_WORKER_SESSION * session)
+ #endif
+ }
+ 
++static int
++la_apply_worker_start_client_context (LA_APPLY_WORKER_SESSION * session)
++{
++#if defined(CS_MODE) && defined(MULTI_CONN_TO_A_SERVER)
++  int error;
++  MOP dba_user;
++
++  error = ws_init ();
++  if (error != NO_ERROR)
++    {
++      return error;
++    }
++
++  sm_init (&session->server_credential.root_class_oid, &session->server_credential.root_class_hfid);
++
++  error = au_start ();
++  if (error != NO_ERROR)
++    {
++      sm_final ();
++      ws_final ();
++      return error;
++    }
++
++  error = db_find_or_create_session ("DBA", db_Program_name);
++  if (error != NO_ERROR)
++    {
++      au_final ();
++      sm_final ();
++      ws_final ();
++      return error;
++    }
++
++  dba_user = au_find_user ("DBA");
++  if (dba_user == NULL)
++    {
++      db_set_session_id (DB_EMPTY_SESSION);
++      au_final ();
++      sm_final ();
++      ws_final ();
++
++      return er_errid () == NO_ERROR ? ER_FAILED : er_errid ();
++    }
++
++  error = AU_SET_USER (dba_user);
++  if (error != NO_ERROR)
++    {
++      db_set_session_id (DB_EMPTY_SESSION);
++      au_final ();
++      sm_final ();
++      ws_final ();
++      return error;
++    }
++
++  tr_init ();
++  (void) db_disable_trigger ();
++
++  session->client_context_started = true;
++#endif
++
++  return NO_ERROR;
++}
++
++static void
++la_apply_worker_end_client_context (LA_APPLY_WORKER_SESSION * session)
++{
++#if defined(CS_MODE) && defined(MULTI_CONN_TO_A_SERVER)
++  if (session->client_context_started)
++    {
++      au_final ();
++      sm_final ();
++      ws_final ();
++      db_set_session_id (DB_EMPTY_SESSION);
++      session->client_context_started = false;
++    }
++#endif
++}
++
+ static int
+ la_apply_worker_start_session (LA_APPLY_WORKER_SESSION * session)
+ {
+@@ -922,6 +1153,17 @@ la_apply_worker_start_session (LA_APPLY_WORKER_SESSION * session)
+       session->css_started = false;
+       return error;
+     }
++
++  boot_set_server_session_key (session->server_credential.server_session_key);
++
++  error = la_apply_worker_start_client_context (session);
++  if (error != NO_ERROR)
++    {
++      la_apply_worker_unregister_client (session);
++      net_client_sub_final ();
++      session->css_started = false;
++      return error;
++    }
+ #endif
+ 
+   __gv_loc_repl.ws_init_repl_objs ();
+@@ -937,6 +1179,7 @@ la_apply_worker_end_session (LA_APPLY_WORKER_SESSION * session)
+ 
+ #if defined(CS_MODE) && defined(MULTI_CONN_TO_A_SERVER)
+   la_apply_worker_unregister_client (session);
++  la_apply_worker_end_client_context (session);
+ 
+   if (session->css_started)
+     {
+@@ -959,9 +1202,22 @@ la_collect_apply_results (void)
+ 	  return result.error;
+ 	}
+ 
++      la_free_commit_node_by_tranid (result.tranid);
++
+       LSA_COPY (&la_Info.committed_lsa, &result.commit_lsa);
++      if (!LSA_ISNULL (&result.committed_rep_lsa))
++	{
++	  LSA_COPY (&la_Info.committed_rep_lsa, &result.committed_rep_lsa);
++	}
+       la_Info.log_record_time = result.log_record_time;
+ 
++      la_Info.insert_counter += result.stats.insert_counter;
++      la_Info.update_counter += result.stats.update_counter;
++      la_Info.delete_counter += result.stats.delete_counter;
++      la_Info.schema_counter += result.stats.schema_counter;
++      la_Info.fail_counter += result.stats.fail_counter;
++      la_Info.num_unflushed += result.stats.num_unflushed;
++
+       if (result.rectype == LOG_COMMIT)
+ 	{
+ 	  la_Info.commit_counter++;
+@@ -985,6 +1241,7 @@ la_apply_worker_main (void *arg)
+   cuberr::context *er_context_p = NULL;
+   bool session_started = false;
+   int error = NO_ERROR;
++  unsigned long long worker_applied_item_count = 0;
+ 
+   er_context_p = new cuberr::context ();
+   er_context_p->register_thread_local ();
+@@ -1003,24 +1260,31 @@ la_apply_worker_main (void *arg)
+       LA_APPLY_TASK task;
+       LA_APPLY_RESULT result;
+       int total_rows = 0;
++      unsigned long long applied_item_count;
+ 
+       if (la_dequeue_apply_task (worker, &task) != NO_ERROR)
+ 	{
+ 	  break;
+ 	}
+ 
++      memset (&result, 0, sizeof (result));
+       result.tranid = task.tranid;
+       result.rectype = task.rectype;
+       result.commit_lsa = task.commit_lsa;
++      LSA_SET_NULL (&result.committed_rep_lsa);
+       result.log_record_time = task.log_record_time;
+-      result.error = la_apply_repl_log (task.tranid, task.rectype, &task.commit_lsa, &total_rows, task.final_pageid);
++      result.error = la_apply_repl_log (task.tranid, task.rectype, &task.commit_lsa, &total_rows, task.final_pageid,
++					&result.committed_rep_lsa, &result.stats);
+       if (result.error == NO_ERROR)
+ 	{
+-	  result.error = la_flush_repl_items (true);
++	  result.error = la_flush_repl_items (true, &result.stats);
+ 	}
+       if (result.error == NO_ERROR)
+ 	{
+-	  result.error = la_commit_transaction ();
++	  applied_item_count =
++	    result.stats.insert_counter + result.stats.update_counter + result.stats.delete_counter + result.stats.fail_counter;
++	  worker_applied_item_count += applied_item_count;
++	  result.error = la_commit_transaction (worker_applied_item_count);
+ 	}
+ 
+       if (la_enqueue_apply_result (worker, &result) != NO_ERROR)
+@@ -3598,6 +3862,25 @@ la_get_item_pk_value (LA_ITEM * item)
+   return &item->key;
+ }
+ 
++static void
++la_clear_repl_item_key (LA_ITEM * item)
++{
++  if (item->log_type == LOG_REPLICATION_STATEMENT && DB_VALUE_TYPE (&item->key) == DB_TYPE_VARCHAR)
++    {
++      char *stmt_text = (char *) db_get_string (&item->key);
++
++      if (stmt_text != NULL)
++	{
++	  free_and_init (stmt_text);
++	}
++
++      db_make_null (&item->key);
++      return;
++    }
++
++  pr_clear_value (&item->key);
++}
++
+ static LA_ITEM *
+ la_make_repl_item (LOG_PAGE * log_pgptr, int log_type, int tranid, LOG_LSA * lsa)
+ {
+@@ -3658,7 +3941,7 @@ la_make_repl_item (LOG_PAGE * log_pgptr, int log_type, int tranid, LOG_LSA * lsa
+     {
+     case LOG_REPLICATION_DATA:
+       ptr = or_unpack_int (area, &item->packed_key_value_length);
+-      ptr = or_unpack_string (ptr, &item->class_name);
++      ptr = or_unpack_string_alloc (ptr, &item->class_name);
+ 
+       item->packed_key_value = (char *) malloc (item->packed_key_value_length);
+       if (item->packed_key_value == NULL)
+@@ -3675,12 +3958,12 @@ la_make_repl_item (LOG_PAGE * log_pgptr, int log_type, int tranid, LOG_LSA * lsa
+ 
+     case LOG_REPLICATION_STATEMENT:
+       ptr = or_unpack_int (area, &item->item_type);
+-      ptr = or_unpack_string (ptr, &item->class_name);
+-      ptr = or_unpack_string (ptr, &str_value);
++      ptr = or_unpack_string_alloc (ptr, &item->class_name);
++      ptr = or_unpack_string_alloc (ptr, &str_value);
+       db_make_string (&item->key, str_value);
+-      item->key.need_clear = true;
+-      ptr = or_unpack_string (ptr, &item->db_user);
+-      ptr = or_unpack_string (ptr, &item->ha_sys_prm);
++      item->key.need_clear = false;
++      ptr = or_unpack_string_alloc (ptr, &item->db_user);
++      ptr = or_unpack_string_alloc (ptr, &item->ha_sys_prm);
+ 
+       break;
+ 
+@@ -3709,18 +3992,18 @@ error_return:
+     {
+       if (item->class_name != NULL)
+ 	{
+-	  db_private_free_and_init (NULL, item->class_name);
+-	  pr_clear_value (&item->key);
++	  free_and_init (item->class_name);
+ 	}
++      la_clear_repl_item_key (item);
+ 
+       if (item->db_user != NULL)
+ 	{
+-	  db_private_free_and_init (NULL, item->db_user);
++	  free_and_init (item->db_user);
+ 	}
+ 
+       if (item->ha_sys_prm != NULL)
+ 	{
+-	  db_private_free_and_init (NULL, item->ha_sys_prm);
++	  free_and_init (item->ha_sys_prm);
+ 	}
+ 
+       if (item->packed_key_value != NULL)
+@@ -3782,18 +4065,18 @@ la_free_repl_item (LA_APPLY * apply, LA_ITEM * item)
+ 
+   if (item->class_name != NULL)
+     {
+-      db_private_free_and_init (NULL, item->class_name);
+-      pr_clear_value (&item->key);
++      free_and_init (item->class_name);
+     }
++  la_clear_repl_item_key (item);
+ 
+   if (item->db_user != NULL)
+     {
+-      db_private_free_and_init (NULL, item->db_user);
++      free_and_init (item->db_user);
+     }
+ 
+   if (item->ha_sys_prm != NULL)
+     {
+-      db_private_free_and_init (NULL, item->ha_sys_prm);
++      free_and_init (item->ha_sys_prm);
+     }
+ 
+   if (item->packed_key_value != NULL)
+@@ -5255,7 +5538,7 @@ la_get_ha_server_state (LOG_PAGE * pgptr, LOG_LSA * lsa)
+  * Note:
+  */
+ static int
+-la_flush_repl_items (bool immediate)
++la_flush_repl_items (bool immediate, LA_APPLY_STATS * stats)
+ {
+   int error = NO_ERROR;
+   int la_err_code = ER_FAILED;
+@@ -5265,15 +5548,20 @@ la_flush_repl_items (bool immediate)
+   const char *server_err_msg = "UNKOWN";
+   char pkey_str[256];
+   char buf[LINE_MAX];
++  int num_repl_objs;
+ 
+   string_buffer sb;
+ 
+-  if (la_Info.num_unflushed == 0)
++  num_repl_objs = __gv_loc_repl.ws_get_repl_obj_count ();
++  if (num_repl_objs == 0)
+     {
++      stats->num_unflushed = 0;
+       return NO_ERROR;
+     }
+ 
+-  if (la_Info.num_unflushed >= LA_MAX_UNFLUSHED_REPL_ITEMS || immediate == true)
++  stats->num_unflushed = num_repl_objs;
++
++  if (num_repl_objs >= LA_MAX_UNFLUSHED_REPL_ITEMS || immediate == true)
+     {
+       error = __gv_loc_repl.locator_repl_flush_all ();
+       if (error == ER_LC_PARTIALLY_FAILED_TO_FLUSH)
+@@ -5305,25 +5593,25 @@ la_flush_repl_items (bool immediate)
+ 	      if (LC_IS_FLUSH_INSERT (flush_err->operation) == true)
+ 		{
+ 		  la_err_code = ER_HA_LA_FAILED_TO_APPLY_INSERT;
+-		  if (la_Info.insert_counter > 0)
++		  if (stats->insert_counter > 0)
+ 		    {
+-		      la_Info.insert_counter--;
++		      stats->insert_counter--;
+ 		    }
+ 		}
+ 	      else if (LC_IS_FLUSH_UPDATE (flush_err->operation) == true)
+ 		{
+ 		  la_err_code = ER_HA_LA_FAILED_TO_APPLY_UPDATE;
+-		  if (la_Info.update_counter > 0)
++		  if (stats->update_counter > 0)
+ 		    {
+-		      la_Info.update_counter--;
++		      stats->update_counter--;
+ 		    }
+ 		}
+ 	      else if (flush_err->operation == LC_FLUSH_DELETE)
+ 		{
+ 		  la_err_code = ER_HA_LA_FAILED_TO_APPLY_DELETE;
+-		  if (la_Info.delete_counter > 0)
++		  if (stats->delete_counter > 0)
+ 		    {
+-		      la_Info.delete_counter--;
++		      stats->delete_counter--;
+ 		    }
+ 		}
+ 	      else
+@@ -5336,7 +5624,7 @@ la_flush_repl_items (bool immediate)
+ 		      server_err_msg);
+ 	      er_stack_pop ();
+ 
+-	      la_Info.fail_counter++;
++	      stats->fail_counter++;
+ 
+ 	      if (la_restart_on_bulk_flush_error (flush_err->error_code) == true)
+ 		{
+@@ -5364,7 +5652,7 @@ la_flush_repl_items (bool immediate)
+ 	}
+       else if (error != NO_ERROR)
+ 	{
+-	  la_Info.fail_counter++;
++	  stats->fail_counter++;
+ 	  __gv_loc_repl.ws_clear_all_repl_errors_of_error_link ();
+ 
+ 	  er_stack_push ();
+@@ -5374,7 +5662,7 @@ la_flush_repl_items (bool immediate)
+ 	  return ER_LC_FAILED_TO_FLUSH_REPL_ITEMS;
+ 	}
+ 
+-      la_Info.num_unflushed = 0;
++      stats->num_unflushed = 0;
+       __gv_loc_repl.ws_clear_all_repl_objs ();
+     }
+ 
+@@ -5392,6 +5680,7 @@ static int
+ la_repl_add_object (MOP classop, LA_ITEM * item, RECDES * recdes)
+ {
+   int error = NO_ERROR;
++  int au_save;
+   SM_CLASS *class_;
+   int pruning_type = DB_NOT_PARTITIONED_CLASS;
+   int operation = 0;
+@@ -5402,16 +5691,19 @@ la_repl_add_object (MOP classop, LA_ITEM * item, RECDES * recdes)
+ 
+   class_oid = ws_oid (classop);
+ 
++  /* TODO: initialize the worker authorization context so replication apply can run as the intended owner. */
++  AU_SAVE_AND_DISABLE (au_save);
++
+   error = au_fetch_class (classop, &class_, AU_FETCH_READ, AU_SELECT);
+   if (error != NO_ERROR)
+     {
+-      return error;
++      goto end;
+     }
+ 
+   error = sm_flush_objects (classop);
+   if (error != NO_ERROR)
+     {
+-      return error;
++      goto end;
+     }
+ 
+   if (item->item_type != RVREPL_DATA_DELETE)
+@@ -5419,7 +5711,7 @@ la_repl_add_object (MOP classop, LA_ITEM * item, RECDES * recdes)
+       error = sm_partitioned_class_type (classop, &pruning_type, NULL, NULL);
+       if (error != NO_ERROR)
+ 	{
+-	  return error;
++	  goto end;
+ 	}
+     }
+ 
+@@ -5445,6 +5737,9 @@ la_repl_add_object (MOP classop, LA_ITEM * item, RECDES * recdes)
+   error =
+     __gv_loc_repl.ws_add_to_repl_obj_list (class_oid, item->packed_key_value, item->packed_key_value_length, recdes,
+ 					   operation, has_index);
++end:
++  AU_RESTORE (au_save);
++
+   return error;
+ }
+ 
+@@ -5465,7 +5760,7 @@ la_set_error_sql_log (const char *class_name, DB_VALUE * key_val)
+ }
+ 
+ static void
+-la_log_apply_error (const char *op_name, int err_id, LA_ITEM * item, int error)
++la_log_apply_error (const char *op_name, int err_id, LA_ITEM * item, int error, LA_APPLY_STATS * stats)
+ {
+   string_buffer sb;
+   sb.clear ();
+@@ -5481,7 +5776,7 @@ la_log_apply_error (const char *op_name, int err_id, LA_ITEM * item, int error)
+ 	  err_id, 4, item->class_name, sb.get_buffer (), error, "internal client error.");
+   er_stack_pop ();
+ 
+-  la_Info.fail_counter++;
++  stats->fail_counter++;
+ }
+ 
+ static int
+@@ -5507,11 +5802,11 @@ la_write_delete_sql_log (LA_ITEM * item, DB_OBJECT * class_obj)
+  *      . If la_enable_sql_logging(config param is ha_enable_sql_logging) is enabled, the query is written to a file.
+  */
+ static int
+-la_apply_delete_log (LA_ITEM * item)
++la_apply_delete_log (LA_ITEM * item, LA_APPLY_STATS * stats)
+ {
+   DB_OBJECT *class_obj;
+ 
+-  int error = la_flush_repl_items (false);
++  int error = la_flush_repl_items (false, stats);
+   if (error != NO_ERROR)
+     {
+       return error;
+@@ -5539,12 +5834,12 @@ la_apply_delete_log (LA_ITEM * item)
+ end:
+   if (error != NO_ERROR)
+     {
+-      la_log_apply_error ("apply_delete", ER_HA_LA_FAILED_TO_APPLY_DELETE, item, error);
++      la_log_apply_error ("apply_delete", ER_HA_LA_FAILED_TO_APPLY_DELETE, item, error, stats);
+     }
+   else
+     {
+-      la_Info.delete_counter++;
+-      la_Info.num_unflushed++;
++      stats->delete_counter++;
++      stats->num_unflushed++;
+     }
+ 
+   return error;
+@@ -5617,7 +5912,7 @@ end:
+  *      . If la_enable_sql_logging(config param is ha_enable_sql_logging) is enabled, the query is written to a file.
+  */
+ static int
+-la_apply_update_log (LA_ITEM * item)
++la_apply_update_log (LA_ITEM * item, LA_APPLY_STATS * stats)
+ {
+   int error = NO_ERROR;
+   unsigned int rcvindex;
+@@ -5626,7 +5921,7 @@ la_apply_update_log (LA_ITEM * item)
+   LOG_PAGEID old_pageid = NULL_PAGEID;
+   DB_OBJECT *class_obj;
+ 
+-  error = la_flush_repl_items (false);
++  error = la_flush_repl_items (false, stats);
+   if (error != NO_ERROR)
+     {
+       return error;
+@@ -5703,12 +5998,12 @@ la_apply_update_log (LA_ITEM * item)
+ end:
+   if (error != NO_ERROR)
+     {
+-      la_log_apply_error ("apply_update", ER_HA_LA_FAILED_TO_APPLY_UPDATE, item, error);
++      la_log_apply_error ("apply_update", ER_HA_LA_FAILED_TO_APPLY_UPDATE, item, error, stats);
+     }
+   else
+     {
+-      la_Info.update_counter++;
+-      la_Info.num_unflushed++;
++      stats->update_counter++;
++      stats->num_unflushed++;
+     }
+ 
+   la_release_page_buffer (old_pageid);
+@@ -5818,7 +6113,7 @@ end:
+  *      . If la_enable_sql_logging(config param is ha_enable_sql_logging) is enabled, the query is written to a file.
+  */
+ static int
+-la_apply_insert_log (LA_ITEM * item)
++la_apply_insert_log (LA_ITEM * item, LA_APPLY_STATS * stats)
+ {
+   int error = NO_ERROR;
+   DB_OBJECT *class_obj;
+@@ -5828,7 +6123,7 @@ la_apply_insert_log (LA_ITEM * item)
+   LOG_PAGEID old_pageid = NULL_PAGEID;
+   bool is_mvcc_class;
+ 
+-  error = la_flush_repl_items (false);
++  error = la_flush_repl_items (false, stats);
+   if (error != NO_ERROR)
+     {
+       return error;
+@@ -5899,12 +6194,12 @@ la_apply_insert_log (LA_ITEM * item)
+ end:
+   if (error != NO_ERROR)
+     {
+-      la_log_apply_error ("apply_insert", ER_HA_LA_FAILED_TO_APPLY_INSERT, item, error);
++      la_log_apply_error ("apply_insert", ER_HA_LA_FAILED_TO_APPLY_INSERT, item, error, stats);
+     }
+   else
+     {
+-      la_Info.insert_counter++;
+-      la_Info.num_unflushed++;
++      stats->insert_counter++;
++      stats->num_unflushed++;
+     }
+ 
+   la_release_page_buffer (old_pageid);
+@@ -6047,7 +6342,7 @@ la_update_query_execute_with_values (const char *sql, int arg_count, DB_VALUE *
+  * Note:
+  */
+ static int
+-la_apply_statement_log (LA_ITEM * item)
++la_apply_statement_log (LA_ITEM * item, LA_APPLY_STATS * stats)
+ {
+   const char *stmt_text = NULL;
+   int error = NO_ERROR, error2 = NO_ERROR;
+@@ -6058,7 +6353,7 @@ la_apply_statement_log (LA_ITEM * item)
+   bool need_set_user = true;
+   int res;
+ 
+-  error = la_flush_repl_items (true);
++  error = la_flush_repl_items (true, stats);
+   if (error != NO_ERROR)
+     {
+       return error;
+@@ -6218,19 +6513,19 @@ la_apply_statement_log (LA_ITEM * item)
+ 	}
+       else if (is_ddl == true)
+ 	{
+-	  la_Info.schema_counter++;
++	  stats->schema_counter++;
+ 	}
+       else if (item->item_type == CUBRID_STMT_INSERT)
+ 	{
+-	  la_Info.insert_counter += res;
++	  stats->insert_counter += res;
+ 	}
+       else if (item->item_type == CUBRID_STMT_DELETE)
+ 	{
+-	  la_Info.delete_counter += res;
++	  stats->delete_counter += res;
+ 	}
+       else if (item->item_type == CUBRID_STMT_UPDATE)
+ 	{
+-	  la_Info.update_counter += res;
++	  stats->update_counter += res;
+ 	}
+ 
+       if (item->ha_sys_prm != NULL)
+@@ -6273,7 +6568,7 @@ la_apply_statement_log (LA_ITEM * item)
+ 	      error, error_msg);
+       er_stack_pop ();
+ 
+-      la_Info.fail_counter++;
++      stats->fail_counter++;
+     }
+   return error;
+ }
+@@ -6307,7 +6602,8 @@ la_is_supported_poc_item (LA_ITEM * item)
+  *    record.
+  */
+ static int
+-la_apply_repl_log (int tranid, int rectype, LOG_LSA * commit_lsa, int *total_rows, LOG_PAGEID final_pageid)
++la_apply_repl_log (int tranid, int rectype, LOG_LSA * commit_lsa, int *total_rows, LOG_PAGEID final_pageid,
++		   LOG_LSA * committed_rep_lsa, LA_APPLY_STATS * stats)
+ {
+   LA_ITEM *item = NULL;
+   LA_ITEM *next_item = NULL;
+@@ -6317,7 +6613,7 @@ la_apply_repl_log (int tranid, int rectype, LOG_LSA * commit_lsa, int *total_row
+   int apply_repl_log_cnt = 0;
+   char error_string[1024];
+   char buf[256];
+-  static unsigned int total_repl_items = 0;
++  static CUB_THREAD_LOCAL unsigned int total_repl_items = 0;
+   bool release_pb = false;
+   bool has_more_commit_items = false;
+ 
+@@ -6375,15 +6671,15 @@ la_apply_repl_log (int tranid, int rectype, LOG_LSA * commit_lsa, int *total_row
+ 		case RVREPL_DATA_UPDATE_START:
+ 		case RVREPL_DATA_UPDATE_END:
+ 		case RVREPL_DATA_UPDATE:
+-		  error = la_apply_update_log (item);
++		  error = la_apply_update_log (item, stats);
+ 		  break;
+ 
+ 		case RVREPL_DATA_INSERT:
+-		  error = la_apply_insert_log (item);
++		  error = la_apply_insert_log (item, stats);
+ 		  break;
+ 
+ 		case RVREPL_DATA_DELETE:
+-		  error = la_apply_delete_log (item);
++		  error = la_apply_delete_log (item, stats);
+ 		  break;
+ 
+ 		default:
+@@ -6395,7 +6691,7 @@ la_apply_repl_log (int tranid, int rectype, LOG_LSA * commit_lsa, int *total_row
+ 	    }
+ 	  else if (item->log_type == LOG_REPLICATION_STATEMENT)
+ 	    {
+-	      error = la_apply_statement_log (item);
++	      error = la_apply_statement_log (item, stats);
+ 	    }
+ 	  else
+ 	    {
+@@ -6408,7 +6704,7 @@ la_apply_repl_log (int tranid, int rectype, LOG_LSA * commit_lsa, int *total_row
+ 
+ 	  if (error == NO_ERROR)
+ 	    {
+-	      LSA_COPY (&la_Info.committed_rep_lsa, &item->lsa);
++	      LSA_COPY (committed_rep_lsa, &item->lsa);
+ 	    }
+ 	  else
+ 	    {
+@@ -6492,19 +6788,35 @@ static int
+ la_apply_commit_list (LOG_LSA * lsa, LOG_PAGEID final_pageid)
+ {
+   LA_COMMIT *commit;
++  LA_APPLY_STATS stats;
++  LOG_LSA committed_rep_lsa;
+   int error = NO_ERROR;
+ 
+   LSA_SET_NULL (lsa);
++  LSA_SET_NULL (&committed_rep_lsa);
++  memset (&stats, 0, sizeof (stats));
+ 
+   commit = la_Info.commit_head;
+   if (commit && (commit->type == LOG_COMMIT || commit->type == LOG_SYSOP_END || commit->type == LOG_ABORT))
+     {
+-      error = la_apply_repl_log (commit->tranid, commit->type, &commit->log_lsa, &la_Info.total_rows, final_pageid);
++      error = la_apply_repl_log (commit->tranid, commit->type, &commit->log_lsa, &la_Info.total_rows, final_pageid,
++				 &committed_rep_lsa, &stats);
+       if (error != NO_ERROR)
+ 	{
+ 	  er_log_debug (ARG_FILE_LINE, "apply_commit_list : error %d while apply_repl_log\n", error);
+ 	}
+ 
++      if (!LSA_ISNULL (&committed_rep_lsa))
++	{
++	  LSA_COPY (&la_Info.committed_rep_lsa, &committed_rep_lsa);
++	}
++      la_Info.insert_counter += stats.insert_counter;
++      la_Info.update_counter += stats.update_counter;
++      la_Info.delete_counter += stats.delete_counter;
++      la_Info.schema_counter += stats.schema_counter;
++      la_Info.fail_counter += stats.fail_counter;
++      la_Info.num_unflushed += stats.num_unflushed;
++
+       LSA_COPY (lsa, &commit->log_lsa);
+ 
+       if (commit->type == LOG_COMMIT)
+@@ -6592,6 +6904,48 @@ la_free_repl_items_by_tranid (int tranid)
+   return;
+ }
+ 
++static void
++la_free_commit_node_by_tranid (int tranid)
++{
++  LA_COMMIT *commit, *commit_next;
++
++  for (commit = la_Info.commit_head; commit; commit = commit_next)
++    {
++      commit_next = commit->next;
++
++      if (commit->tranid == tranid)
++	{
++	  if (commit->next)
++	    {
++	      commit->next->prev = commit->prev;
++	    }
++	  else
++	    {
++	      la_Info.commit_tail = commit->prev;
++	    }
++
++	  if (commit->prev)
++	    {
++	      commit->prev->next = commit->next;
++	    }
++	  else
++	    {
++	      la_Info.commit_head = commit->next;
++	    }
++
++	  commit->next = NULL;
++	  commit->prev = NULL;
++
++	  free_and_init (commit);
++	}
++    }
++
++  if (la_Info.commit_head == NULL)
++    {
++      la_Info.commit_tail = NULL;
++    }
++}
++
+ static LA_ITEM *
+ la_get_next_repl_item (LA_ITEM * item, bool is_long_trans, LOG_LSA * last_lsa)
+ {
+@@ -7154,11 +7508,11 @@ la_check_mem_size (void)
+ }
+ 
+ int
+-la_commit_transaction (void)
++la_commit_transaction (unsigned long long applied_item_count)
+ {
+   int error = NO_ERROR;
+-  static int last_time = 0;
+-  static unsigned long long last_applied_item = 0;
++  static CUB_THREAD_LOCAL int last_time = 0;
++  static CUB_THREAD_LOCAL unsigned long long last_applied_item = 0;
+   int curr_time;
+   int diff_time;
+   unsigned long long curr_applied_item;
+@@ -7174,8 +7528,7 @@ la_commit_transaction (void)
+ 
+   if (last_applied_item == 0)
+     {
+-      last_applied_item =
+-	la_Info.insert_counter + la_Info.update_counter + la_Info.delete_counter + la_Info.fail_counter;
++      last_applied_item = applied_item_count;
+     }
+ 
+   error = db_commit_transaction ();
+@@ -7187,7 +7540,7 @@ la_commit_transaction (void)
+   curr_time = time (NULL);
+   diff_time = curr_time - last_time;
+ 
+-  curr_applied_item = la_Info.insert_counter + la_Info.update_counter + la_Info.delete_counter + la_Info.fail_counter;
++  curr_applied_item = applied_item_count;
+   diff_applied_item = curr_applied_item - last_applied_item;
+ 
+   start_time = curr_time - la_Info.start_time;
