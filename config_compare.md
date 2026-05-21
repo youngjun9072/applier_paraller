@@ -21,6 +21,56 @@ Develop / Parallel 두 빌드 모두 동일하게 적용한 측정 환경.
 
 ---
 
+## 측정 방식 — Develop 재실험 사유
+
+이전 develop 테스트는 다음 순서로 측정하고 있어 **duration 안에 commit 시간이 포함**되고, 직후 **불필요한 두 번째 commit** 까지 들어가 있었음. 이 때문에 `1.develop_profile/1.insert/` 및 `2.update/`의 10-client 결과는 비교 기준선으로 적합하지 않다고 판단하고, `3.new_client10_insert/` · `4.new_client10_update/` 로 재실험.
+
+### Before (이전 develop 측정 순서)
+
+```sql
+-- 시작 타임스탬프 캡처
+SELECT SYSDATETIME();
+
+INSERT INTO tbl VALUES (1, ...);
+INSERT INTO tbl VALUES (2, ...);
+...
+INSERT INTO tbl VALUES (100000, ...);
+
+COMMIT;                       -- 1차 커밋
+
+-- 종료 타임스탬프 캡처 (이미 commit 끝난 뒤)
+SELECT SYSDATETIME();
+
+COMMIT;                       -- 2차 커밋 (불필요/중복)
+```
+
+→ `duration = end_ts − start_ts` 에 **commit 시간이 포함**되고, 뒤의 2차 commit이 군더더기.
+
+### After (재실험 — prepare-execute 1)
+
+```sql
+;autocommit off
+
+-- 시작 타임스탬프 캡처
+SELECT SYSDATETIME();
+
+INSERT INTO tbl VALUES (1, ...);
+INSERT INTO tbl VALUES (2, ...);
+...
+INSERT INTO tbl VALUES (100000, ...);
+
+-- 종료 타임스탬프 캡처 (commit 직전)
+SELECT SYSDATETIME();
+
+COMMIT;                       -- 1회만
+```
+
+→ `duration` 은 순수 INSERT 구간만 포함, commit은 측정 밖에서 1회 수행.
+
+> Parallel(`6.parallelization_profile/`) 측정도 동일한 prepare-execute 1 방식이라, 두 브랜치가 같은 정의의 duration으로 비교된다.
+
+---
+
 ## INSERT (10 client) — Slave
 
 ### Develop
