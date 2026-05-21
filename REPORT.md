@@ -235,6 +235,55 @@
 - (보조) `perf lock` / `perf trace -e syscalls:sys_enter_futex` 로 `prior_lsa_mutex` 경합 이벤트 직접 카운트 → 가설 못박기.
 - H2 완화 이후 **2차 병목 후보(`lock_object` lock-free hashmap, 10.92%)** 가 다음 핫스팟으로 부상하는지 재측정.
 
+## 6. Parallelization Profile
+
+> 상세: [`6.parallelization_profile/`](6.parallelization_profile/)
+
+### 6.1 목적
+
+- 섹션 1(`1.develop_profile`)과 동일 워크로드(테이블 10개 × 10만 건, **10 클라이언트** 동시 부하)를 병렬화 적용 빌드에서 재측정.
+- 1:1 매칭 데이터셋은 [`1.develop_profile/1.insert/client_10.md`](1.develop_profile/1.insert/client_10.md), [`1.develop_profile/2.update/client_10.md`](1.develop_profile/2.update/client_10.md).
+
+### 6.2 환경
+
+- 빌드: `CUBRID-11.5.0.2197-72099e6-Linux.x86_64`
+- 공통 설정: `double_write_buffer_size=0`, `data_buffer_size=5G`, `log_buffer_size=5G`, `log_volume_size=1G`, `checkpoint_interval=30min`
+- 사전 처리: `;checkpoint`, `addvoldb` (데이터 100GB + temp)
+
+### 6.3 INSERT — 10 클라이언트 매칭 비교
+
+**전체 지표 (Develop vs Parallel)**
+
+| 지표 | Develop (client_10) | Parallel | 변화 |
+|---|---|---|---|
+| 마스터 전체 수행 시간 | 48.681 s | 61.665 s | **+26.7%** |
+| 슬레이브 전체 수행 시간 | 29.416 s | **16.428 s** | **−44.2%** |
+
+원본 데이터셋:
+
+- Develop: [`1.develop_profile/1.insert/client_10.md`](1.develop_profile/1.insert/client_10.md)
+- Parallel: [`6.parallelization_profile/1.insert_csql/result.md`](6.parallelization_profile/1.insert_csql/result.md)
+
+### 6.4 UPDATE — 10 클라이언트 매칭 비교
+
+**전체 지표 (Develop vs Parallel)**
+
+| 지표 | Develop (client_10) | Parallel | 변화 |
+|---|---|---|---|
+| 마스터 전체 수행 시간 | 54.932 s | 64.006 s | **+16.5%** |
+| 슬레이브 전체 수행 시간 | 29.147 s | **13.713 s** | **−53.0%** |
+
+원본 데이터셋:
+
+- Develop: [`1.develop_profile/2.update/client_10.md`](1.develop_profile/2.update/client_10.md)
+- Parallel: [`6.parallelization_profile/2.update_csql/result.md`](6.parallelization_profile/2.update_csql/result.md)
+
+### 6.5 요약
+
+- **슬레이브 복제 시간이 INSERT/UPDATE 모두 단축** (−44%, −53%) — 병렬화가 전체 종료 시점을 줄이는 효과를 정량 확인.
+- **마스터 전체 수행 시간은 +17~27% 증가** — 다수 클라이언트가 동시에 마스터에 부하를 줄 때 단일 마스터 자원 경합으로 처리 시간이 늘어나는 효과 동반.
+- 테이블 개별 수행 시간은 원본 raw 파일 참조 (위 링크). 본 보고서에서는 **전체 복제 시간 비교**에 집중.
+
 ## 9. TODO
 
 > 상세: [`9.todo/`](9.todo/)

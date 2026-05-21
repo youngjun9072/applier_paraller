@@ -1,26 +1,33 @@
 # Develop Profile
 
-병렬화 적용 이전(develop 브랜치) 기준선(baseline) 측정 결과를 기록한다.
+병렬화 적용 이전(`develop` 브랜치) 기준선(baseline) 측정 결과.
+연산(INSERT / UPDATE) × 클라이언트 수(1 / 5 / 10 / 20)로 분류해 저장한다.
+
+기본 측정 방식: **prepare-execute 1** (autocommit off → prepare → start time → execute → end time → commit).
+1 클라이언트만 4가지 변형(normal / prepare-execute 1 / prepare-execute 2 / INSERT…SELECT) 포함.
 
 ---
 
-## 슬레이브 복제 시간 측정 — Release 모드
+## INSERT
 
-| 테이블명 | 시작시간 | 종료시간 | Duration |
-|----------|----------|----------|----------|
-| tbl9  | 03:41:52.833 PM | 03:41:55.620 PM | 2.787 sec |
-| tbl3  | 03:41:55.632 PM | 03:42:02.574 PM | 6.942 sec |
-| tbl5  | 03:41:59.149 PM | 03:42:02.576 PM | 3.427 sec |
-| tbl2  | 03:42:02.598 PM | 03:42:12.569 PM | 9.971 sec |
-| tbl1  | 03:42:05.089 PM | 03:42:15.091 PM | 10.002 sec |
-| tbl7  | 03:42:07.615 PM | 03:42:15.091 PM | 7.476 sec |
-| tbl6  | 03:42:10.129 PM | 03:42:15.092 PM | 4.963 sec |
-| tbl10 | 03:42:12.578 PM | 03:42:15.092 PM | 2.514 sec |
-| tbl4  | 03:42:15.103 PM | 03:42:22.202 PM | 7.099 sec |
-| tbl8  | 03:42:17.724 PM | 03:42:22.249 PM | 4.525 sec |
+| Client 수 | 파일 |
+|---|---|
+| 1  | [1.insert/client_1.md](1.insert/client_1.md) |
+| 5  | [1.insert/client_5.md](1.insert/client_5.md) |
+| 10 | [1.insert/client_10.md](1.insert/client_10.md) |
+| 20 | [1.insert/client_20.md](1.insert/client_20.md) |
 
-### 종합 지표
+## UPDATE
 
-| 지표 | 시간 | 의미 |
-|------|------|------|
-| 슬레이브 복제 시간 | 29.42초 | 슬레이브 최초 Start(03:41:52.833, tbl9) → 슬레이브 최종 End(03:42:22.249, tbl8) |
+| Client 수 | 파일 |
+|---|---|
+| 1  | [2.update/client_1.md](2.update/client_1.md) |
+| 5  | [2.update/client_5.md](2.update/client_5.md) |
+| 10 | [2.update/client_10.md](2.update/client_10.md) |
+| 20 | [2.update/client_20.md](2.update/client_20.md) |
+
+---
+
+## 요약 (TODO)
+
+연산별·클라이언트 수별 마스터 / 슬레이브 수행시간과 시작·종료 딜레이를 한 표로 정리 예정.
