@@ -55,17 +55,81 @@
 
 테스트 종류별로 디렉토리를 분리하여 관리한다. (동일 디렉토리에 묶으면 같은 실험 회차로 오인될 수 있어 분리)
 
+워크로드별로 디렉토리를 분기한다. **1~3번이 INSERT, 4~6번이 UPDATE** 로 동일한 3단계 측정을 각각 수행한다. 현재 본 문서는 INSERT 워크로드(1~3) 결과를 기준으로 기술하며, UPDATE 워크로드(4~6)는 별도 디렉토리에서 측정 결과가 채워질 예정.
+
 ```
 5.bottleneck_analysis/
-├── README.md                ← 본 문서
-├── 1.csql_test/             ← 1단계: 활성 워커 수별 csql 측정
+├── README.md                       ← 본 문서
+├── applier-perf-SKILL.md           ← perf 캡처 스킬 정의 (사용법은 아래 참조)
+│
+│   ── INSERT 워크로드 ─────────────────────────────────────
+├── 1.insert_csql_test/             ← 1단계 (INSERT): 활성 워커 수별 csql 측정
 │   ├── worker_1.md
 │   └── worker_10.md
-├── 2.applier_perf_test/     ← 2단계: applier(클라이언트) 측 perf
+├── 2.insert_applier_perf_test/     ← 2단계 (INSERT): applier(클라이언트) 측 perf
 │   ├── worker_1.md
 │   └── worker_10.md
-└── 3.server_perf_test/      ← 3단계: 슬레이브 서버 측 perf (진행 중)
+├── 3.insert_server_perf_test/      ← 3단계 (INSERT): 슬레이브 서버 측 perf
+│   ├── insert_worker_10.md
+│   └── parallelism_verification.md
+│
+│   ── UPDATE 워크로드 ─────────────────────────────────────
+├── 4.update_csql_test/             ← 1단계 (UPDATE): 활성 워커 수별 csql 측정 (예정)
+├── 5.update_applier_perf_test/     ← 2단계 (UPDATE): applier(클라이언트) 측 perf (예정)
+└── 6.update_server_perf_test/      ← 3단계 (UPDATE): 슬레이브 서버 측 perf + INSERT 대비 비교
+    ├── update_worker_10.md
+    └── comparison_insert_vs_update_worker_10.md
 ```
+
+---
+
+## 측정 도구 — `applier-perf` 스킬
+
+본 섹션의 2단계·3단계 perf 측정은 `applier-perf` 스킬로 자동화됨.
+스킬 정의: [`applier-perf-SKILL.md`](applier-perf-SKILL.md)
+
+### 무엇을 하는가
+
+- 대상: `applylogdb` (applier) + 짝이 되는 `cub_server` **두 프로세스만**
+- 동시에 3트랙 백그라운드 캡처:
+  - **on-CPU**: `perf record -F 999 -g --call-graph dwarf`
+  - **off-CPU**: `perf record -e sched:sched_switch --call-graph dwarf` (어디서 멈춰 기다리는지)
+  - **futex**: `perf record -e syscalls:sys_{enter,exit}_futex --call-graph dwarf` (lock-wait 인지 sleep 인지 가르는 결정타)
+- `applylogdb` thread count 매초 모니터링 (`thread_counts.log`)
+- 결과는 `./perf-runs/YYYYMMDD-HHMMSS/` (KST) 하위에 저장
+- 종료 시 `slocator_repl_force` TID 분포, off-CPU wait 함수, futex stack lock owner 함수까지 **자동 요약**
+
+### 사용법
+
+```text
+applier-perf [<dbname>]    # dbname 생략 시 testdb
+```
+
+트리거: `"applier-perf"`, `"applier perf"`, `"applylogdb perf"`, `"perf 측정 시작"` 등.
+
+진행 흐름:
+1. PID 단일 매칭 (`applylogdb` 1개, `cub_server` 1개) 확인
+2. `OUTDIR` 생성 후 4개 백그라운드 프로세스(on-CPU / off-CPU / futex / monitor) 동시 spawn
+3. 사용자에게 PID 보고 → **워크로드 실행**
+4. 사용자가 `"종료"` 라고 말하면 → INT 시그널로 정리, `perf script` 변환 + 자동 요약 출력
+
+### 산출물 (OUTDIR)
+
+| 파일 | 내용 |
+|------|------|
+| `oncpu.{data,script,log}` | on-CPU 콜스택 (CPU 사용 시간) |
+| `offcpu.{data,script,log}` | sched_switch 콜스택 (wait 시간) |
+| `futex.{data,script,log}` | futex 진입/탈출 콜스택 (mutex contention 식별) |
+| `thread_counts.log` | applylogdb 매초 thread count + uniq name |
+
+### 전제 / 주의
+
+- 같은 user UID 프로세스 attach만 검증됨. 다른 UID면 sudo 필요.
+- **off-CPU / futex tracepoint 는 `perf_event_paranoid <= 1` 필요** (paranoid=2 환경에선 on-CPU만 성공). 임시로 `sudo sysctl kernel.perf_event_paranoid=1` 권장.
+- futex 트랙은 contention 심하면 **분당 GB 급** 으로 자라남 — 캡처 시간 주의.
+- 3트랙은 반드시 **동시 캡처** (같은 워크로드 윈도우여야 비율 비교가 의미 있음).
+
+> 본 README의 2단계·3단계 perf 결과는 모두 이 스킬로 수집되었음. 재현 시 동일한 절차를 따른다.
 
 ---
 
@@ -86,8 +150,8 @@
 ## 1차 측정: csql 부하 테스트
 
 측정값 상세:
-- [`1.csql_test/worker_1.md`](1.csql_test/worker_1.md) — 활성화 워커 1개 측정 (활성 워커는 `worker_id = 2`)
-- [`1.csql_test/worker_10.md`](1.csql_test/worker_10.md) — 활성화 워커 10개 측정
+- [`1.insert_csql_test/worker_1.md`](1.insert_csql_test/worker_1.md) — 활성화 워커 1개 측정 (활성 워커는 `worker_id = 2`)
+- [`1.insert_csql_test/worker_10.md`](1.insert_csql_test/worker_10.md) — 활성화 워커 10개 측정
 
 ### 데이터 정리
 
@@ -138,8 +202,8 @@
 - 목적: 어느 함수/락/IO 지점에서 시간이 소비되는지를 콜스택 기반으로 좁히기
 
 측정값 상세:
-- [`2.applier_perf_test/worker_1.md`](2.applier_perf_test/worker_1.md) — 활성 워커 함수 호출 트리
-- [`2.applier_perf_test/worker_10.md`](2.applier_perf_test/worker_10.md) — 워커 10개 각각의 함수 누적 시간
+- [`2.insert_applier_perf_test/worker_1.md`](2.insert_applier_perf_test/worker_1.md) — 활성 워커 함수 호출 트리
+- [`2.insert_applier_perf_test/worker_10.md`](2.insert_applier_perf_test/worker_10.md) — 워커 10개 각각의 함수 누적 시간
 
 ### 결과 — 함수 호출 트리 비교
 
@@ -217,7 +281,7 @@
 
 #### 검증 결과 (요약)
 
-> 상세: [`3.server_perf_test/parallelism_verification.md`](3.server_perf_test/parallelism_verification.md)
+> 상세: [`3.insert_server_perf_test/parallelism_verification.md`](3.insert_server_perf_test/parallelism_verification.md)
 
 - `slocator_repl_force` 를 호출한 서버 TID 분포 확인 결과:
   - 총 호출 수 **170,001** (= 10 트랜잭션 × 17,000, applier 측과 일치 → 누락 없음)
@@ -249,7 +313,7 @@
 
 ### 결과 — 가설 매칭 (요약)
 
-> 상세 콜체인 + 해석: [`3.server_perf_test/worker_10.md`](3.server_perf_test/worker_10.md)
+> 상세 콜체인 + 해석: [`3.insert_server_perf_test/insert_worker_10.md`](3.insert_server_perf_test/insert_worker_10.md)
 
 | ID | 매칭 함수 inclusive % | 트리 등장 |
 |----|----------------------|-----------|
