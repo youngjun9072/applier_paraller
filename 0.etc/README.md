@@ -6,3 +6,4 @@
 
 - `1.insert_call_chain/` — INSERT 워크로드 콜체인 분석 자료
 - `2.update_call_chain/` — UPDATE 워크로드 콜체인 분석 자료
+- `3.2worker_update/` — UPDATE 워크로드 2 worker 실행 결과
