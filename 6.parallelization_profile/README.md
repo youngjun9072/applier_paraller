@@ -17,8 +17,8 @@ checkpoint_interval      = 30min
 ```
 
 - 실험 전 `csql -u dba --sysadm`으로 접속해 `;checkpoint` 수행
-- `addvoldb`로 100GB 볼륨 추가
-- `addvoldb`로 temp 볼륨 추가
+- `addvoldb`로 기본 데이터 볼륨 100GB 추가
+- `addvoldb`로 temp 볼륨 512MB 추가
 
 ## 워크로드별 결과
 

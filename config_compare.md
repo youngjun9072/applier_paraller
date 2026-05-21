@@ -6,9 +6,18 @@
 
 ## 변경한 Config
 
-| 항목 | 이전 값 | 변경 값 | 비고 |
-|---|---|---|---|
-|  |  |  |  |
+Develop / Parallel 두 빌드 모두 동일하게 적용한 측정 환경.
+
+| 항목 | 값 | 비고 |
+|---|---|---|
+| `double_write_buffer_size` | 0 | DWB 비활성화 |
+| `data_buffer_size` | 5G | |
+| `log_buffer_size` | 5G | |
+| `log_volume_size` | 1G | |
+| `checkpoint_interval` | 30min | |
+| 기본 데이터 볼륨 | 100GB | `addvoldb` 로 추가 |
+| 템프 볼륨 | 512MB | `addvoldb` 로 추가 |
+| 시작 전 체크포인트 | `;checkpoint` 실행 | `csql -u dba --sysadm` 접속 후 |
 
 ---
 
