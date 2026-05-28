@@ -284,6 +284,107 @@
 - **마스터 전체 수행 시간은 +17~27% 증가** — 다수 클라이언트가 동시에 마스터에 부하를 줄 때 단일 마스터 자원 경합으로 처리 시간이 늘어나는 효과 동반.
 - 테이블 개별 수행 시간은 원본 raw 파일 참조 (위 링크). 본 보고서에서는 **전체 복제 시간 비교**에 집중.
 
+## 7. Final Test
+
+> 상세: [`7.final_test/`](7.final_test/) · 종합 리포트: [`7.final_test/report.md`](7.final_test/report.md), 슬레이브 전용 타임라인: [`7.final_test/report_v2.md`](7.final_test/report_v2.md)
+
+### 7.1 목적
+
+섹션 6의 병렬화 프로파일을 확장해, develop/POC 빌드와 주요 설정 조합을 같은 워크로드에서 재측정한다.
+목표는 다음 세 가지를 분리해서 확인하는 것이다.
+
+- **develop 순차 applier vs POC 병렬 applier**의 구조 차이.
+- `data_buffer_size`, `double_write_buffer_size`, temp volume 등 **config tuning 효과**.
+- 병렬화가 빠른 이유가 단순히 워커 하나가 빨라져서인지, 아니면 **동시 활성 워커 수 증가** 때문인지.
+
+### 7.2 실험 구성
+
+공통 워크로드는 테이블 10개 × 10만 건, 10 클라이언트 동시 부하이며, INSERT/UPDATE를 각각 측정했다.
+
+| # | 실험 | Build | 주요 설정 |
+|---|---|---|---|
+| 1 | `dev_baseline` | develop | default + `addvoldb 100G` |
+| 2 | `dev_tuned` | develop | `dwb=0`, `data_buffer=5G`, `log_buffer=5G`, temp volume |
+| 3 | `poc_buf5g_dwb1` | POC | `dwb=1`, `data_buffer=5G`, temp volume |
+| 4 | `poc_bufdef_dwb0` | POC | `dwb=0`, `data_buffer=512MB`, temp volume |
+| 5 | `poc_bufdef_dwb1` | POC | `dwb=1`, `data_buffer=512MB`, temp volume |
+| 6 | `poc_buf5g_dwb0` | POC | `dwb=0`, `data_buffer=5G`, temp volume |
+| 7 | `poc_baseline` | POC | default + `addvoldb 100G` |
+
+> `2.dev_tuned`와 `6.poc_buf5g_dwb0`는 설정이 동일하고, 차이는 build branch(develop vs POC)뿐이다. 따라서 동일 tuning 조건에서 순차 applier와 병렬 applier를 가장 직접적으로 비교하는 페어다.
+
+### 7.3 INSERT 결과
+
+| # | 실험 | Master Elapsed | Slave Elapsed | Slave Sum | Slave/worker | Eff. Parallelism | Mode |
+|---|---|---:|---:|---:|---:|---:|---|
+| 1 | `dev_baseline` | 156.56 s | 80.43 s | 77.82 s | - | - | 순차 |
+| 2 | `dev_tuned` | 154.60 s | 87.80 s | 80.50 s | - | - | 순차 |
+| 3 | `poc_buf5g_dwb1` | 159.61 s | 29.93 s | 131.38 s | 13.14 s | 4.39 | 병렬 |
+| 4 | `poc_bufdef_dwb0` | 163.75 s | 36.79 s | 160.29 s | 16.03 s | 4.36 | 병렬 |
+| 5 | `poc_bufdef_dwb1` | 164.37 s | 64.77 s | 303.40 s | 30.34 s | 4.68 | 병렬 |
+| 6 | `poc_buf5g_dwb0` | 162.20 s | **25.85 s** | 160.97 s | 16.10 s | **6.23** | 병렬 |
+| 7 | `poc_baseline` | 157.00 s | 68.55 s | 273.32 s | 27.33 s | 3.99 | 병렬 |
+
+### 7.4 UPDATE 결과
+
+| # | 실험 | Master Elapsed | Slave Elapsed | Slave Sum | Slave/worker | Eff. Parallelism | Mode |
+|---|---|---:|---:|---:|---:|---:|---|
+| 1 | `dev_baseline` | 182.91 s | 106.03 s | 105.33 s | - | - | 순차 |
+| 2 | `dev_tuned` | 192.27 s | 111.84 s | 108.48 s | - | - | 순차 |
+| 3 | `poc_buf5g_dwb1` | 188.17 s | **28.18 s** | 156.11 s | **15.61 s** | 5.54 | 병렬 |
+| 4 | `poc_bufdef_dwb0` | 197.38 s | 40.08 s | 170.64 s | 17.06 s | 4.26 | 병렬 |
+| 5 | `poc_bufdef_dwb1` | 192.64 s | 40.10 s | 358.49 s | 35.85 s | **8.94** | 병렬 |
+| 6 | `poc_buf5g_dwb0` | 179.21 s | 32.59 s | 163.24 s | 16.32 s | 5.01 | 병렬 |
+| 7 | `poc_baseline` | 193.74 s | 48.20 s | 279.51 s | 27.95 s | 5.80 | 병렬 |
+
+> `Slave Elapsed`는 첫 slave apply부터 마지막 slave apply까지의 wall-clock, `Slave Sum`은 테이블별 slave 처리 시간 합, `Eff. Parallelism = Slave Sum / Slave Elapsed`다.
+
+### 7.5 핵심 비교
+
+**동일 tuning 조건의 develop vs POC (`2.dev_tuned` → `6.poc_buf5g_dwb0`)**
+
+| 항목 | develop tuned | POC tuned | 변화 |
+|---|---:|---:|---:|
+| INSERT Slave Elapsed | 87.80 s | **25.85 s** | **−70.6%** |
+| UPDATE Slave Elapsed | 111.84 s | **32.59 s** | **−70.9%** |
+
+→ 같은 설정에서도 순차 applier는 한 번에 한 테이블만 반영하지만, POC는 평균 5~6개 수준의 워커가 동시에 활성화되어 slave elapsed를 약 71% 줄였다.
+
+**POC 내부 config tuning 효과 (`7.poc_baseline` → `6.poc_buf5g_dwb0`)**
+
+| 항목 | POC baseline | POC tuned | 변화 |
+|---|---:|---:|---:|
+| INSERT Slave Elapsed | 68.55 s | **25.85 s** | **−62%** |
+| INSERT Slave/worker | 27.33 s | **16.10 s** | **−41%** |
+| UPDATE Slave Elapsed | 48.20 s | **32.59 s** | **−32%** |
+| UPDATE Slave/worker | 27.95 s | **16.32 s** | **−42%** |
+
+→ 병렬 applier에서는 config tuning이 추가로 크게 작동한다. 특히 워커당 처리 시간이 약 40% 단축된다.
+
+**develop 내부 config tuning 효과 (`1.dev_baseline` → `2.dev_tuned`)**
+
+| 항목 | develop baseline | develop tuned | 변화 |
+|---|---:|---:|---:|
+| INSERT Slave Elapsed | 80.43 s | 87.80 s | +9.2% |
+| UPDATE Slave Elapsed | 106.03 s | 111.84 s | +5.5% |
+
+→ 순차 applier에서는 buffer/dwb/temp tuning이 slave 복제 시간 개선으로 이어지지 않았다. 구조적으로 한 테이블씩만 처리하는 병목이 config 효과를 가린다.
+
+### 7.6 요인 분석
+
+- **`data_buffer_size=5G`가 가장 강한 단일 요인**이다. `dwb=1` 조건에서 default buffer → 5G 변경 시 INSERT 워커당 시간이 30.34초 → 13.14초로 **57% 단축**된다.
+- **`double_write_buffer_size=0` 효과는 buffer 크기에 의존**한다. default buffer에서는 INSERT 워커당 시간이 30.34초 → 16.03초로 크게 줄지만, 5G buffer에서는 워커당 시간이 13.14초 → 16.10초로 오히려 늘 수 있다.
+- 다만 5G buffer에서 `dwb=0`은 워커 하나를 더 빠르게 만들기보다 **동시 활성 워커 수를 늘려 wall-clock을 줄이는 쪽**으로 작동했다. INSERT 기준 `poc_buf5g_dwb1`은 Eff. Parallelism 4.39, `poc_buf5g_dwb0`는 6.23이다.
+- `poc_baseline`은 병렬성 자체는 확보했지만, default buffer와 temp volume 부재로 워커당 시간이 27~28초까지 늘어 POC 그룹 내 느린 축에 속한다.
+- Master DML 시간은 build/config 간 차이가 크지 않다. INSERT 154~164초, UPDATE 179~197초 범위로, 최종 성능 차이는 대부분 **slave applier 단계**에서 발생했다.
+
+### 7.7 최종 결론
+
+- 병렬화 PoC는 최종 실험에서도 **순차 applier 대비 slave elapsed를 약 70% 단축**했다.
+- config tuning은 develop 순차 applier에서는 효과가 거의 없지만, POC 병렬 applier에서는 **추가 성능 개선 요인**으로 작동한다.
+- POC 기준 권장 설정 우선순위는 `data_buffer_size=5G`가 1순위, `double_write_buffer_size=0`은 보조 요인이다.
+- 최단 결과는 INSERT `6.poc_buf5g_dwb0` 25.85초, UPDATE `3.poc_buf5g_dwb1` 28.18초다. 공통점은 **5G data buffer + temp volume 적용**이다.
+
 ## 9. TODO
 
 > 상세: [`9.todo/`](9.todo/)
