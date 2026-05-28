@@ -1,11 +1,11 @@
-# UPDATE 콜체인 비교 (트리 버전) — v2 (2.) vs tuned (5.)
+# UPDATE 콜체인 비교 (트리 버전) — default (2.) vs tuned (5.)
 
 비교 대상:
-- `2.update_call_chain/REPORT.md` 섹션 2 (v2 raw stack 트리, qeu=100%, 0.3% 컷오프)
+- `2.update_call_chain/REPORT.md` 섹션 2 (default raw stack 트리, qeu=100%, 0.3% 컷오프)
 - `5.update_call_chain_tuned/parallel_update_perf_final.md` 섹션 2 (tuned, qeu=100%, 0.3% 컷오프)
 
 기준: `qexec_execute_update` = 100% (qeu inclusive %).
-v2 트리 구조를 기준으로 각 노드에 v2/tuned 값과 Δ(=tuned−v2)를 병기했습니다.
+default 트리 구조를 기준으로 각 노드에 default/tuned 값과 Δ(=tuned−default)를 병기했습니다.
 tuned 트리의 0.3% 컷오프로 사라진 노드는 `--` 로 표기 (실제로 사라진 게 아니라 컷오프 아래로 분산된 경우도 포함).
 
 ## 형식 설명
@@ -13,26 +13,26 @@ tuned 트리의 0.3% 컷오프로 사라진 노드는 `--` 로 표기 (실제로
 각 노드는 다음 형식으로 표기:
 
 ```
-[v2% / tn%, Δ] function_name
+[default% / tn%, Δ] function_name
 ```
 
-- **v2%** — `2.update_call_chain/REPORT.md` 섹션 2 트리에서 해당 노드의 inclusive % (qeu=100% 기준으로 정규화). 즉, qeu 가 들어간 전체 stack 중 이 호출 경로 (root→...→해당 노드) 가 등장한 비율.
+- **default%** — `2.update_call_chain/REPORT.md` 섹션 2 트리에서 해당 노드의 inclusive % (qeu=100% 기준으로 정규화). 즉, qeu 가 들어간 전체 stack 중 이 호출 경로 (root→...→해당 노드) 가 등장한 비율.
 - **tn%** — `5.update_call_chain_tuned/parallel_update_perf_final.md` 섹션 2 트리에서 같은 위치(같은 부모 경로 아래 같은 함수)의 inclusive %. tuned 트리는 0.3% 컷오프이므로 그 아래로 떨어진 노드는 `--` 로 표기.
-- **Δ** — `tn% − v2%`. 양수면 tuned 에서 비중이 늘어난 것, 음수면 줄어든 것. `−` 는 Unicode minus (U+2212), `+` 는 ASCII. tuned 가 `--` 면 Δ 도 `--`.
+- **Δ** — `tn% − default%`. 양수면 tuned 에서 비중이 늘어난 것, 음수면 줄어든 것. `−` 는 Unicode minus (U+2212), `+` 는 ASCII. tuned 가 `--` 면 Δ 도 `--`.
 
 읽는 법:
 - inclusive % 는 "그 노드 + 그 노드의 모든 자손 시간" 의 합 비율이므로, 자식 노드들의 % 합이 부모 % 보다 작거나 같음 (perf 의 다른 자식이 컷오프로 안 보일 수 있고, 자기 자신의 self-time 도 부모에 포함됨).
 - **같은 함수가 트리의 다른 위치에 등장하면 각 위치마다 별도의 노드로 나타나고, 위치별 Δ 가 서로 다를 수 있음.** UPDATE 트리는 이 효과가 매우 두드러짐:
-  - `scan_next_scan` 은 `qexec_intprt_fnc` 아래 (v2 39.55 → tn 36.28, Δ −3.27) 와 root 직속 (v2 3.24 → tn 40.14, Δ +36.90) 두 군데 등장. 트리 구조 자체가 tuned 에서 root-level 쪽으로 더 분기됨.
+  - `scan_next_scan` 은 `qexec_intprt_fnc` 아래 (default 39.55 → tn 36.28, Δ −3.27) 와 root 직속 (default 3.24 → tn 40.14, Δ +36.90) 두 군데 등장. 트리 구조 자체가 tuned 에서 root-level 쪽으로 더 분기됨.
   - `lock_object` 도 `locator_lock_and_get_object_internal` 아래 (Δ −6.22) 와 `qexec_execute_mainblock` 직속 (Δ +9.32) 두 위치에 등장.
   - 함수명 기준으로 합산한 값은 `update_callchain_compare.md` 의 표 참고.
-- v2 와 tuned 의 트리는 캡처 자체가 다르므로 (다른 빌드, 다른 시점), 같은 위치라도 약간의 노이즈가 섞일 수 있음. ±0.3% 정도의 작은 Δ 는 노이즈 가능성을 염두에 두고 해석.
+- default 와 tuned 의 트리는 캡처 자체가 다르므로 (다른 빌드, 다른 시점), 같은 위치라도 약간의 노이즈가 섞일 수 있음. ±0.3% 정도의 작은 Δ 는 노이즈 가능성을 염두에 두고 해석.
 - `--` 가 의미하는 것: tuned 트리의 0.3% 컷오프 아래로 분산됐거나, 실제로 거의 사라졌거나 둘 중 하나. 트리만으론 구분 불가 — `parallel_update_perf_final.md` 의 perf script raw dump 를 직접 봐야 확정 가능.
 
 예:
-- `[15.57 / 9.35, −6.22] lock_object` (`locator_lock_and_get_object_internal` 아래) → v2 에선 qeu 의 15.57% 가 이 경로로 lock_object 에 진입했지만 tuned 에선 9.35% 로 6.22%p 감소.
+- `[15.57 / 9.35, −6.22] lock_object` (`locator_lock_and_get_object_internal` 아래) → default 에선 qeu 의 15.57% 가 이 경로로 lock_object 에 진입했지만 tuned 에선 9.35% 로 6.22%p 감소.
 - `[3.24 / 40.14, +36.90] scan_next_scan` (root 직속) → 위치별 비중이 폭증. 다른 위치의 `scan_next_scan` 은 줄었으므로 (위 참고), 트리 구조가 root-level 로 옮겨간 것.
-- `[0.39 / --, --] lock_insert_into_tran_hold_list` → v2 에선 0.39% 잡혔지만 tuned 트리엔 컷오프 아래로 빠짐.
+- `[0.39 / --, --] lock_insert_into_tran_hold_list` → default 에선 0.39% 잡혔지만 tuned 트리엔 컷오프 아래로 빠짐.
 
 ## 트리
 
@@ -231,7 +231,7 @@ tuned 트리의 0.3% 컷오프로 사라진 노드는 `--` 로 표기 (실제로
 - `qexec_end_one_iteration` 전체: 8.39 → 7.91 (−0.48). 안쪽 `qfile_generate_tuple_into_list` (−0.68), `mr_data_writeval_string` (−0.60).
 
 ### 늘어난 경로 (tuned 가 더 큼)
-- **root 직속 `scan_next_scan`**: 3.24 → 40.14 (+36.90). v2 에선 거의 안 보이던 경로가 tuned 에선 메인 비중을 차지. 같은 함수의 `qexec_intprt_fnc` 아래 위치는 오히려 줄었으므로 (39.55 → 36.28), tuned 의 콜체인이 root-level scan_next_scan 으로 더 많이 분기된 것으로 보임. 위치별 함수 합산은 `update_callchain_compare.md` 표 참고.
+- **root 직속 `scan_next_scan`**: 3.24 → 40.14 (+36.90). default 에선 거의 안 보이던 경로가 tuned 에선 메인 비중을 차지. 같은 함수의 `qexec_intprt_fnc` 아래 위치는 오히려 줄었으므로 (39.55 → 36.28), tuned 의 콜체인이 root-level scan_next_scan 으로 더 많이 분기된 것으로 보임. 위치별 함수 합산은 `update_callchain_compare.md` 표 참고.
 - **root 직속 `qexec_next_scan_block_iterations`**: 2.00 → 7.78 (+5.78), 그 안의 `scan_start_scan` +3.43, `scan_end_scan` +1.31.
 - **root 직속 `qexec_open_scan`**: 0.96 → 6.47 (+5.51). 직속 child `scan_open_list_scan` 은 −0.22 로 작으므로, 늘어난 5.51% 의 대부분은 컷오프 아래로 분산된 것으로 추정.
 - **root 직속 `lock_object`** (qexec_execute_mainblock 직속): 0.32 → 9.64 (+9.32). 마찬가지로 `qexec_intprt_fnc` 아래 lock_object 는 줄었지만 다른 위치로 옮겨간 형태.
@@ -243,6 +243,6 @@ tuned 트리의 0.3% 컷오프로 사라진 노드는 `--` 로 표기 (실제로
 ## 주의
 
 - tuned 트리의 0.3% 컷오프 때문에 `malloc` / `_int_malloc` / `__pthread_mutex_lock` / `__pthread_mutex_unlock_usercnt` / `lock_insert_into_tran_hold_list` / `pgbuf_unlatch_void_zone_bcb` / `spage_get_record` / `prm_get_value` 등은 트리에 안 잡혀서 `--` 로 표기. **완전히 사라진 게 아니라 컷오프 아래로 분산됐을 수 있음.**
-- 위 트리는 v2 의 트리 구조를 기준으로 노드별 값을 병기한 것이므로, 같은 함수가 트리의 다른 위치에 나타나면 각 위치마다 Δ 가 별도로 계산됨. 예) `scan_next_scan` 은 `qexec_intprt_fnc` 아래 (−3.27) 와 root 직속 (+36.90) 위치에서 Δ 가 정반대. 함수명 누적으로 보면 (`update_callchain_compare.md` 의 표) 두 캡처 합산값은 v2 42.79% → tuned 76.42% (+33.63) 로 전체적으로는 늘었음.
-- 두 캡처의 qeu 자체 비중 (전체 on-CPU 중) — v2: 7.75%, tuned: 9.77% — 은 다르지만, 위 트리는 두 쪽 모두 qeu=100% 로 정규화한 값이므로 함수별 비율 비교는 그대로 유효함.
+- 위 트리는 default 의 트리 구조를 기준으로 노드별 값을 병기한 것이므로, 같은 함수가 트리의 다른 위치에 나타나면 각 위치마다 Δ 가 별도로 계산됨. 예) `scan_next_scan` 은 `qexec_intprt_fnc` 아래 (−3.27) 와 root 직속 (+36.90) 위치에서 Δ 가 정반대. 함수명 누적으로 보면 (`update_callchain_compare.md` 의 표) 두 캡처 합산값은 default 42.79% → tuned 76.42% (+33.63) 로 전체적으로는 늘었음.
+- 두 캡처의 qeu 자체 비중 (전체 on-CPU 중) — default: 7.75%, tuned: 9.77% — 은 다르지만, 위 트리는 두 쪽 모두 qeu=100% 로 정규화한 값이므로 함수별 비율 비교는 그대로 유효함.
 - 함수별 누적 합산값은 `update_callchain_compare.md` 의 표 참고.

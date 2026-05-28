@@ -1,7 +1,7 @@
-# UPDATE 콜체인 비교 — v2 (2.) vs tuned (5.)
+# UPDATE 콜체인 비교 — default (2.) vs tuned (5.)
 
 비교 대상:
-- `2.update_call_chain/REPORT.md` (v2 master, 섹션 2/3)
+- `2.update_call_chain/REPORT.md` (default master, 섹션 2/3)
 - `5.update_call_chain_tuned/parallel_update_perf_final.md` (tuned, 섹션 2)
 
 기준: `qexec_execute_update` = 100% (qeu inclusive %)
@@ -9,9 +9,9 @@
 ## 함수별 inclusive % 비교
 
 tuned 값은 트리 내 동일 함수가 여러 경로에 등장하면 합산했습니다.
-v2 트리에는 있지만 tuned 트리에는 안 보이는 함수(0.3% 컷오프 아래로 떨어졌거나 제거된 경우)는 `-` 로 표기했습니다.
+default 트리에는 있지만 tuned 트리에는 안 보이는 함수(0.3% 컷오프 아래로 떨어졌거나 제거된 경우)는 `-` 로 표기했습니다.
 
-| 함수 | v2 (2.) % | tuned (5.) % | Δ (tuned − v2) |
+| 함수 | default (2.) % | tuned (5.) % | Δ (tuned − default) |
 |---|---:|---:|---:|
 | `qexec_execute_update` | 100.00 | 100.00 | 0.00 |
 | `qexec_execute_mainblock` | 99.96 | 62.48 | −37.48 |
@@ -155,5 +155,5 @@ v2 트리에는 있지만 tuned 트리에는 안 보이는 함수(0.3% 컷오프
 ## 주의
 
 - tuned 트리의 0.3% 컷오프 때문에 `malloc` / `_int_malloc` / `__pthread_mutex_lock` / `__pthread_mutex_unlock_usercnt` / `pgbuf_unlatch_void_zone_bcb` / `lock_insert_into_tran_hold_list` / `prm_get_value` / `spage_get_record` / `std::_Function_base::_Base_manager<...>` 같은 함수는 트리에 안 잡혀서 `-` 로 처리됐습니다. **완전히 사라졌다는 의미가 아니라 컷오프 아래로 분산됐을 수도 있습니다.**
-- v2 측 % 는 `REPORT.md` 섹션 3 표(같은 stack 안 같은 함수는 한 번만 카운트한 dedup 값)를 그대로 가져온 값이고, tuned 측 % 는 섹션 2 트리에 나온 inclusive % 를 함수별로 단순 합산한 값입니다. 동일 stack 내 중복이 있을 경우 tuned 값은 약간 과대평가될 수 있습니다 (특히 `scan_next_scan` / `scan_next_scan_local` 같이 트리 내 동일 함수가 여러 위치에 등장하는 경우 합산 결과가 v2 dedup 값보다 크게 부풀려질 수 있음 — 위 표의 `scan_next_scan` Δ +33.63 등은 이 효과가 섞여 있으므로 절댓값보다 추세로 해석하는 것을 권장).
-- 두 캡처의 qeu 자체 비중 (전체 on-CPU 중) — v2: 7.75%, tuned: 9.77% — 은 다르지만, 위 표는 두 trees 모두 qeu=100% 로 정규화한 값이므로 함수별 비율 비교는 그대로 유효합니다.
+- default 측 % 는 `REPORT.md` 섹션 3 표(같은 stack 안 같은 함수는 한 번만 카운트한 dedup 값)를 그대로 가져온 값이고, tuned 측 % 는 섹션 2 트리에 나온 inclusive % 를 함수별로 단순 합산한 값입니다. 동일 stack 내 중복이 있을 경우 tuned 값은 약간 과대평가될 수 있습니다 (특히 `scan_next_scan` / `scan_next_scan_local` 같이 트리 내 동일 함수가 여러 위치에 등장하는 경우 합산 결과가 default dedup 값보다 크게 부풀려질 수 있음 — 위 표의 `scan_next_scan` Δ +33.63 등은 이 효과가 섞여 있으므로 절댓값보다 추세로 해석하는 것을 권장).
+- 두 캡처의 qeu 자체 비중 (전체 on-CPU 중) — default: 7.75%, tuned: 9.77% — 은 다르지만, 위 표는 두 trees 모두 qeu=100% 로 정규화한 값이므로 함수별 비율 비교는 그대로 유효합니다.

@@ -1,11 +1,11 @@
-# INSERT 콜체인 비교 (트리 버전) — v2 (1.) vs tuned (4.)
+# INSERT 콜체인 비교 (트리 버전) — default (1.) vs tuned (4.)
 
 비교 대상:
-- `1.insert_call_chain/REPORT.md` 섹션 2 (v2 raw stack 트리, lif=100%, 0.3% 컷오프)
+- `1.insert_call_chain/REPORT.md` 섹션 2 (default raw stack 트리, lif=100%, 0.3% 컷오프)
 - `4.insert_call_chain_tuned/parallel_insert_perf_final.md` 섹션 2 (tuned, lif=100%, 0.3% 컷오프)
 
 기준: `locator_insert_force` = 100% (lif inclusive %).
-v2 트리 구조를 기준으로 각 노드에 v2/tuned 값과 Δ(=tuned−v2)를 병기했습니다.
+default 트리 구조를 기준으로 각 노드에 default/tuned 값과 Δ(=tuned−default)를 병기했습니다.
 tuned 트리의 0.3% 컷오프로 사라진 노드는 `--` 로 표기 (실제로 사라진 게 아니라 컷오프 아래로 분산된 경우도 포함).
 
 ## 형식 설명
@@ -13,22 +13,22 @@ tuned 트리의 0.3% 컷오프로 사라진 노드는 `--` 로 표기 (실제로
 각 노드는 다음 형식으로 표기:
 
 ```
-[v2% / tn%, Δ] function_name
+[default% / tn%, Δ] function_name
 ```
 
-- **v2%** — `1.insert_call_chain/REPORT.md` 섹션 2 트리에서 해당 노드의 inclusive % (lif=100% 기준으로 정규화). 즉, lif 가 들어간 전체 stack 중 이 호출 경로 (root→...→해당 노드) 가 등장한 비율.
+- **default%** — `1.insert_call_chain/REPORT.md` 섹션 2 트리에서 해당 노드의 inclusive % (lif=100% 기준으로 정규화). 즉, lif 가 들어간 전체 stack 중 이 호출 경로 (root→...→해당 노드) 가 등장한 비율.
 - **tn%** — `4.insert_call_chain_tuned/parallel_insert_perf_final.md` 섹션 2 트리에서 같은 위치(같은 부모 경로 아래 같은 함수)의 inclusive %. tuned 트리는 0.3% 컷오프이므로 그 아래로 떨어진 노드는 `--` 로 표기.
-- **Δ** — `tn% − v2%`. 양수면 tuned 에서 비중이 늘어난 것, 음수면 줄어든 것. `−` 는 Unicode minus (U+2212), `+` 는 ASCII. tuned 가 `--` 면 Δ 도 `--`.
+- **Δ** — `tn% − default%`. 양수면 tuned 에서 비중이 늘어난 것, 음수면 줄어든 것. `−` 는 Unicode minus (U+2212), `+` 는 ASCII. tuned 가 `--` 면 Δ 도 `--`.
 
 읽는 법:
 - inclusive % 는 "그 노드 + 그 노드의 모든 자손 시간" 의 합 비율이므로, 자식 노드들의 % 합이 부모 % 보다 작거나 같음 (perf 의 다른 자식이 컷오프로 안 보일 수 있고, 자기 자신의 self-time 도 부모에 포함됨).
 - 같은 함수가 트리의 다른 위치(다른 부모 경로 아래)에 등장하면 각 위치마다 별도의 노드로 나타남 → 위치별로 Δ 가 다를 수 있음. 함수명 기준으로 합산한 값은 `insert_callchain_compare.md` 의 표 참고.
-- v2 와 tuned 의 트리는 캡처 자체가 다르므로 (다른 빌드, 다른 시점), 같은 위치라도 약간의 노이즈가 섞일 수 있음. ±0.3% 정도의 작은 Δ 는 노이즈 가능성을 염두에 두고 해석.
+- default 와 tuned 의 트리는 캡처 자체가 다르므로 (다른 빌드, 다른 시점), 같은 위치라도 약간의 노이즈가 섞일 수 있음. ±0.3% 정도의 작은 Δ 는 노이즈 가능성을 염두에 두고 해석.
 - `--` 가 의미하는 것: tuned 트리의 0.3% 컷오프 아래로 분산됐거나, 실제로 거의 사라졌거나 둘 중 하나. 트리만으론 구분 불가 — `parallel_insert_perf_final.md` 의 perf script raw dump 를 직접 봐야 확정 가능.
 
 예:
-- `[80.22 / 74.92, −5.30] heap_insert_logical` → v2 에선 lif 의 80.22% 가 이 경로로, tuned 에선 74.92% 로 5.30%p 감소.
-- `[3.00 / --, --] thread_suspend_timeout_wakeup_and_unlock_entry` → v2 에선 3.00% 잡혔지만 tuned 트리엔 컷오프 아래로 빠짐.
+- `[80.22 / 74.92, −5.30] heap_insert_logical` → default 에선 lif 의 80.22% 가 이 경로로, tuned 에선 74.92% 로 5.30%p 감소.
+- `[3.00 / --, --] thread_suspend_timeout_wakeup_and_unlock_entry` → default 에선 3.00% 잡혔지만 tuned 트리엔 컷오프 아래로 빠짐.
 - `[6.61 / 13.45, +6.84] spage_insert_at` → tuned 에서 비중이 두 배 가까이 늘어남.
 
 ## 트리
@@ -199,5 +199,5 @@ tuned 트리의 0.3% 컷오프로 사라진 노드는 `--` 로 표기 (실제로
 ## 주의
 
 - tuned 트리의 0.3% 컷오프 때문에 `malloc` / `_int_malloc` / `__pthread_mutex_lock` / `__pthread_mutex_unlock_usercnt` / `pthread_cond_timedwait` / `__lll_unlock_wake` / `thread_suspend_timeout_wakeup_and_unlock_entry` / `pgbuf_get_victim` / `pgbuf_get_victim_from_lru_list` / `sysmalloc` / `__mprotect` / `malloc_consolidate` / `lock_insert_into_tran_hold_list` / `realloc` / `mremap_chunk` / `__GI___mremap` / `heap_page_get_vacuum_status@plt` 등은 트리에 안 잡혀서 `--` 로 표기. **완전히 사라진 게 아니라 컷오프 아래로 분산됐을 수 있음.**
-- 두 캡처의 lif 자체 비중 (전체 on-CPU 중) — v2: 5.13%, tuned: 5.78% — 은 다르지만, 위 트리는 두 쪽 모두 lif=100% 로 정규화한 값이므로 함수별 비율 비교는 그대로 유효함.
+- 두 캡처의 lif 자체 비중 (전체 on-CPU 중) — default: 5.13%, tuned: 5.78% — 은 다르지만, 위 트리는 두 쪽 모두 lif=100% 로 정규화한 값이므로 함수별 비율 비교는 그대로 유효함.
 - 함수별 누적 합산값 (같은 함수가 트리 여러 위치에 등장할 때 합) 은 `insert_callchain_compare.md` 의 표 참고.

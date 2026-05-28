@@ -1,7 +1,7 @@
-# INSERT 콜체인 비교 — v2 (1.) vs tuned (4.)
+# INSERT 콜체인 비교 — default (1.) vs tuned (4.)
 
 비교 대상:
-- `1.insert_call_chain/REPORT.md` (v2 master, 섹션 2/3)
+- `1.insert_call_chain/REPORT.md` (default master, 섹션 2/3)
 - `4.insert_call_chain_tuned/parallel_insert_perf_final.md` (tuned, 섹션 2)
 
 기준: `locator_insert_force` = 100% (lif inclusive %)
@@ -9,9 +9,9 @@
 ## 함수별 inclusive % 비교
 
 tuned 값은 트리 내 동일 함수가 여러 경로에 등장하면 합산했습니다.
-v2 트리에는 있지만 tuned 트리에는 안 보이는 함수(0.3% 컷오프 아래로 떨어졌거나 제거된 경우)는 `-` 로 표기했습니다.
+default 트리에는 있지만 tuned 트리에는 안 보이는 함수(0.3% 컷오프 아래로 떨어졌거나 제거된 경우)는 `-` 로 표기했습니다.
 
-| 함수 | v2 (1.) % | tuned (4.) % | Δ (tuned − v2) |
+| 함수 | default (1.) % | tuned (4.) % | Δ (tuned − default) |
 |---|---:|---:|---:|
 | `locator_insert_force` | 100.00 | 100.00 | 0.00 |
 | `heap_insert_logical` | 80.22 | 74.92 | −5.30 |
@@ -106,5 +106,5 @@ v2 트리에는 있지만 tuned 트리에는 안 보이는 함수(0.3% 컷오프
 ## 주의
 
 - tuned 트리의 0.3% 컷오프 때문에 `malloc` / `_int_malloc` / `__pthread_mutex_lock` / `pthread_cond_timedwait` 같은 함수는 트리에 안 잡혀서 `-` 로 처리됐습니다. **완전히 사라졌다는 의미가 아니라 컷오프 아래로 분산됐을 수도 있습니다.**
-- v2 측 % 는 `REPORT.md` 섹션 3 표(같은 stack 안 같은 함수는 한 번만 카운트한 dedup 값)를 그대로 가져온 값이고, tuned 측 % 는 섹션 2 트리에 나온 inclusive % 를 함수별로 단순 합산한 값입니다. 동일 stack 내 중복이 있을 경우 tuned 값은 약간 과대평가될 수 있습니다.
-- 두 캡처의 lif 자체 비중 (전체 on-CPU 중) — v2: 5.13%, tuned: 5.78% — 은 다르지만, 위 표는 두 trees 모두 lif=100% 로 정규화한 값이므로 함수별 비율 비교는 그대로 유효합니다.
+- default 측 % 는 `REPORT.md` 섹션 3 표(같은 stack 안 같은 함수는 한 번만 카운트한 dedup 값)를 그대로 가져온 값이고, tuned 측 % 는 섹션 2 트리에 나온 inclusive % 를 함수별로 단순 합산한 값입니다. 동일 stack 내 중복이 있을 경우 tuned 값은 약간 과대평가될 수 있습니다.
+- 두 캡처의 lif 자체 비중 (전체 on-CPU 중) — default: 5.13%, tuned: 5.78% — 은 다르지만, 위 표는 두 trees 모두 lif=100% 로 정규화한 값이므로 함수별 비율 비교는 그대로 유효합니다.
