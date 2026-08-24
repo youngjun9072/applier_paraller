@@ -1,0 +1,63 @@
+diff --git a/src/communication/network_cl.c b/src/communication/network_cl.c
+index 57c889201..e0eab4400 100644
+--- a/src/communication/network_cl.c
++++ b/src/communication/network_cl.c
+@@ -91,9 +91,9 @@
+ 
+ #if defined(CS_MODE)
+ #if !defined(MULTI_CONN_TO_A_SERVER)
+-unsigned short method_request_id;	// TODO: dive into class connection_cl // ctshim
++CUB_THREAD_LOCAL unsigned short method_request_id;	// TODO: dive into class connection_cl // ctshim
+ #else
+-unsigned short method_request_id;
++CUB_THREAD_LOCAL unsigned short method_request_id;
+ #endif
+ #endif /* CS_MODE */
+ 
+@@ -3697,6 +3697,10 @@ end:
+ int
+ net_client_sub_init ()
+ {
++  /* TODO: MULTI_CONN_TO_A_SERVER worker connections should not depend on the
++   * shared net_Server_name/net_Server_host target. Pass explicit db/host
++   * target per worker/sub-connection instead of reusing process-global state.
++   */
+   return __gv_cvar.css_client_sub_init (net_Server_name, net_Server_host);
+ }
+ 
+diff --git a/src/connection/connection_cl.cpp b/src/connection/connection_cl.cpp
+index 34d84fd30..befbe5075 100644
+--- a/src/connection/connection_cl.cpp
++++ b/src/connection/connection_cl.cpp
+@@ -1246,7 +1246,7 @@ bool
+ connection_cl::css_is_valid_request_id (CSS_CONN_ENTRY *conn, unsigned short request_id)
+ {
+ #if defined(CS_MODE)
+-  extern unsigned short method_request_id;
++  extern CUB_THREAD_LOCAL unsigned short method_request_id;
+ 
+   if (method_request_id == request_id)
+     {
+diff --git a/src/transaction/log_applier.c b/src/transaction/log_applier.c
+index 04439e091..adf199370 100644
+--- a/src/transaction/log_applier.c
++++ b/src/transaction/log_applier.c
+@@ -100,7 +100,7 @@
+ #define LA_QUERY_BUF_SIZE                       2048
+ 
+ #define LA_MAX_REPL_ITEMS                       1000
+-#define LA_APPLY_WORKER_COUNT                   2
++#define LA_APPLY_WORKER_COUNT                   4
+ #define LA_APPLY_WORKER_QUEUE_CAPACITY          1024
+ /* 디스패치된 태스크의 원래 순서를 기억해 두기 위한 FIFO 용량 (워커 큐 합보다 크게 잡는다) */
+ #define LA_DISPATCH_ORDER_CAPACITY              (LA_APPLY_WORKER_COUNT * LA_APPLY_WORKER_QUEUE_CAPACITY + 1)
+@@ -1259,6 +1259,9 @@ la_apply_worker_start_session (LA_APPLY_WORKER_SESSION * session)
+   memset (session, 0, sizeof (*session));
+   la_init_worker_server_credential (&session->server_credential);
+ 
++  /* TODO: Initialize a worker-local network target before net_client_sub_init()
++   * so applylogdb workers do not rely on shared client target state.
++   */
+   error = net_client_sub_init ();
+   if (error != NO_ERROR)
+     {

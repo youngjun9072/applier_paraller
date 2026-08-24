@@ -1,0 +1,946 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>사용자 스펙</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+/* For default-background callouts, render the border outline. */
+.callout.block-color-default_background {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+/*
+ * Toggles and callouts hold arbitrary content, so they can easily be taller
+ * than a page. They must stay breakable: avoiding breaks inside them makes
+ * Chromium push the whole block onto the next page, which leaves the previous
+ * page mostly empty before every long toggle.
+ */
+details,
+aside {
+	margin: 1.25em 0;
+}
+
+/* Keep a toggle's title on the same page as the start of its content. */
+summary {
+	page-break-after: avoid;
+	break-after: avoid;
+}
+
+/*
+ * Toggle headings render as <h1/h2/h3 style="display:inline-block"> inside
+ * <summary>. Without this reset, the heading's margin-top pushes it below the
+ * ::marker (▼), so the triangle and the title appear on separate lines.
+ */
+summary h1,
+summary h2,
+summary h3,
+summary h4 {
+	margin-top: 0;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+
+	table.collection-content {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.collection-content th,
+	table.collection-content td {
+		overflow-wrap: anywhere;
+	}
+
+	table.collection-content td > .user,
+	table.collection-content td > time {
+		white-space: pre-wrap;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content-wrapper {
+	overflow-x: auto;
+}
+
+@media only print {
+	.collection-content-wrapper {
+		overflow-x: visible;
+	}
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding-inline: 0.125rem;
+	padding-block: 0.375rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+table {
+	border-collapse: collapse;
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol.numbered-list.numbered-list-digits-2 {
+	padding-inline-start: 2em;
+}
+
+ol.numbered-list.numbered-list-digits-3plus {
+	padding-inline-start: 2.4em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+/*
+ * Render emoji icons using a ::before pseudo-element to keep the glyph
+ * out of the DOM textContent traversal. This avoids double-rendering icons
+ * in callouts and page titles.
+ * NOTE(slim/html-export-pseudo-icons): I can't tagref this because it will
+ * flag as a duplicate tag after codegen.
+ */
+.icon[data-emoji]::before {
+	content: attr(data-emoji);
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	margin-right: 0.4em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.tab {
+	margin: 1.25em 0;
+	padding-inline: 1rem;
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style><style>@import url('https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex-swap.min.css')</style></head><body><article id="25ef567a-e165-800a-bd98-fceab867021f" class="page sans"><header><h1 class="page-title" dir="auto">사용자 스펙</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><h2 id="25ef567a-e165-810d-bfcd-f46c15408c7e" class="" dir="auto">1. 제약 사항</h2><ul id="25ef567a-e165-8117-bf5a-c4331d8aeb48" class="bulleted-list" dir="auto"><li style="list-style-type:disc">HA 모드 실행 시 <span style="border-bottom:0.05em solid">복제 테이블은 복제를 위한 복제 키 (RK: Replication Key) 가 존재하지 않으면 HA모드를 실행 할 수 없다.</span><aside class="block-color-gray_background callout" data-notion-callout="" data-notion-callout-icon="💡" data-notion-callout-background="gray_background" style="white-space:pre-wrap;display:flex" id="25ef567a-e165-8150-b2bc-c9ad9d68580f" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="💡"></span></div><div style="width:100%"><p id="25ef567a-e165-81f9-ba7d-fd9edb5525d4" class="" dir="auto">HA 모드는 “cubrid hb start” 로 큐브리드를 실행시킨 상태를 의미하며 나머지는 모두 싱글모드</p></div></aside></li></ul><ul id="25ef567a-e165-81a0-a80a-e9667b287044" class="bulleted-list" dir="auto"><li style="list-style-type:disc">복제 키는 큐브리드 엔진에 의해 Primary Key(이후 PK로 표기) 혹은 Not Null Unique Key(이후 UK로 표기)들 중 하나로 선택된다 <aside class="block-color-gray_background callout" data-notion-callout="" data-notion-callout-icon="💡" data-notion-callout-background="gray_background" style="white-space:pre-wrap;display:flex" id="25ef567a-e165-817a-9693-f32fcffbd578" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="💡"></span></div><div style="width:100%"><p id="25ef567a-e165-811e-9057-d699e0833b82" class="" dir="auto">복제키는 다음 기준에 의해 결정된다</p><ol type="1" id="25ef567a-e165-81bc-acb6-f442c8cf7507" class="numbered-list" start="1" dir="auto"><li>PK가 존재한다면 PK가 복제 키가 됨</li></ol><ol type="1" id="25ef567a-e165-8136-8281-fdbccf445a74" class="numbered-list" start="2" dir="auto"><li>PK가 없이 UK가 존재한다면 UK가 복제 키가 됨</li></ol><ol type="1" id="25ef567a-e165-8114-8886-ef5a9629b0fe" class="numbered-list" start="3" dir="auto"><li>UK가 여러개 존재한다면 큐브리드 엔진에 의해 이 중 하나가 선택된다(ex. 테이블내에 명시된 순서 중 가장 빠른 순서)</li></ol></div></aside></li></ul><ul id="25ef567a-e165-80a8-a238-e15ca806c56b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">모든 DDL은 슬레이브로 복제되며 테이블의 REPLICATION 옵션은 데이터 복제 여부를 결정한다. REPLICATION OFF 로 인한 데이터 불일치는 책임지지 않는다(6. 뷰(VIEW)).</li></ul><ul id="25ef567a-e165-8110-94d8-e836375a4212" class="bulleted-list" dir="auto"><li style="list-style-type:disc">사용자는 추가된 옵션(2. 변경되거나 추가된 SQL)을 통해 복제 제외 테이블을 생성할 수 있으며, 복제 제외 테이블은 복제 키의 유무와 상관 없이 생성 가능하다. 단 HA 복제 대상에서는 제외된다.</li></ul><p id="25ef567a-e165-8126-a458-c1a298f41e07" class="" dir="auto">
+</p><h2 id="25ef567a-e165-814b-82a6-cfe42ca5224c" class="" dir="auto">2. 변경되거나 추가된 SQL</h2><p id="25ef567a-e165-8121-a1a5-ce8c2ea5e093" class="" dir="auto">복제 대상 테이블 및 복제 제외 테이블을 구분하기위해 <em>CREATE TABLE</em>과 <em>ALTER</em> <br/><em>TABLE</em> 시 다음 옵션을 제공한다.</p><ul id="25ef567a-e165-81ab-8473-c451af674d44" class="bulleted-list" dir="auto"><li style="list-style-type:disc">REPLICATION={ON|OFF}</li></ul><h3 id="25ef567a-e165-81de-a3f2-c4c972607860" class="" dir="auto">2-1. CREATE TABLE 옵션 추가</h3><p id="25ef567a-e165-81f2-933e-c8a2891c77f6" class="" dir="auto"><em>CREATE TABLE … REPLICATION</em> 옵션은 복제 테이블 생성 여부를 설정한다.</p><ul id="25ef567a-e165-8145-ae4c-ee0483e6c840" class="bulleted-list" dir="auto"><li style="list-style-type:disc">ON: 복제 테이블</li></ul><ul id="25ef567a-e165-816a-945d-f1401f813f9e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">OFF: 복제 제외 테이블</li></ul><p id="25ef567a-e165-814b-908b-d3ff5a778145" class="" dir="auto">이 옵션은 생략 가능하며 생략시 ON으로 자동으로 복제 테이블로 생성된다. <span style="border-bottom:0.05em solid">주의할 점은 복제 키가 없는 테이블은 싱글 모드에서만 생성 가능하고, HA 전환시 에러가 발생한다. </span></p><p id="25ef567a-e165-8183-8ca7-c4a04200e9b8" class="" dir="auto">
+</p><ul id="25ef567a-e165-8154-87af-dc3143bd44a4" class="bulleted-list" dir="auto"><li style="list-style-type:disc">REPLICATION = ON <ul id="25ef567a-e165-8176-ba38-d6f191f9a6a9" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 1. <em>CREATE TABLE</em>을 통한 테이블 생성 예시. 복제키가 존재하는 복제 테이블.<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js" integrity="sha512-sijCOJblSCXYYmXdwvqV0tak8QJW5iy2yLB1wAbbLc3OOIueqymizRFWUS/mwKctnzPKpNdPJV3aK1zlDMJmXQ==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><pre id="25ef567a-e165-818c-a16a-c67360a32681" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE repl_table_with_rk(
+	a INT PRIMARY KEY,
+	b INT NOT NULL UNIQUE,
+	c INT
+);
+
+// 또는 
+csql&gt; CREATE TABLE repl_table_with_rk(
+	a INT PRIMARY KEY,
+	b INT NOT NULL UNIQUE,
+	c INT
+)REPLICATION = ON;</code></pre></li></ul><ul id="25ef567a-e165-8168-be2b-dd3c3b5e1cb8" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 2. <em>CREATE TABLE </em>을 통한 테이블 생성 예시. 복제 키가 존재하지 않는 복제 테이블. 오직 싱글모드에서만 생성 가능.<pre id="25ef567a-e165-81bc-9c49-d7da6d06dd96" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE repl_table_without_rk(
+	a INT,
+);
+// 또는
+csql&gt; CREATE TABLE repl_table_without_rk(
+	a INT,
+)REPLICATION = ON;</code></pre></li></ul></li></ul><ul id="25ef567a-e165-819f-be33-d2fc424ce323" class="bulleted-list" dir="auto"><li style="list-style-type:disc">REPLICATION = OFF<ul id="25ef567a-e165-817b-bd55-f074657c6761" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 3. <em>CREATE TABLE </em>을 통한 테이블 생성 예시. 복제 제외 PK가 존재하지만 복제 제외 테이블로 생성 됨.<pre id="25ef567a-e165-81b1-a076-c56a2f45ca71" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE non_repl_table_with_rk(
+	a INT PRIMARY KEY
+)REPLICATION = OFF;</code></pre></li></ul><ul id="25ef567a-e165-8144-b426-c635db7f4449" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 4. <em>CREATE TABLE </em>을 통한 테이블 생성 예시.  PK가 존재하지 않는 테이블을 생성하기위해선 복제 제외 테이블로 생성해야 함.  <pre id="25ef567a-e165-81e8-aac0-cc26bdc9d435" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE non_repl_table_without_rk(
+	a INT
+)REPLICATION = OFF;</code></pre></li></ul></li></ul><p id="25ef567a-e165-81a9-b7d7-c1f7fb17a1c1" class="" dir="auto">
+</p><h3 id="25ef567a-e165-810e-9261-e4eb2a90317d" class="" dir="auto">2-2. ALTER 옵션 및 SQL 추가</h3><p id="25ef567a-e165-8114-96d1-c88b46196bc0" class="" dir="auto"><em>ALTER TABLE … REPLICATION </em>은 테이블을 복제 테이블 혹은 복제 제외 테이블로 변경한다. 단, <span style="border-bottom:0.05em solid">HA 모드에서는 복제 제외 테이블이 복제 테이블로 변경될 수 없다.</span></p><ul id="25ef567a-e165-8188-9884-e47a9be4c013" class="bulleted-list" dir="auto"><li style="list-style-type:disc">예시 5. REPLICATION = ON<pre id="25ef567a-e165-81ee-9338-d40650d52f0f" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; ALTER TABLE tbl REPLICATION=ON;
+
+ERROR</code></pre></li></ul><ul id="25ef567a-e165-81ec-bdaa-e521786785c1" class="bulleted-list" dir="auto"><li style="list-style-type:disc">예시 6. REPLICATION = OFF<pre id="25ef567a-e165-810d-9afd-c125f3a16d47" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; ALTER TABLE tbl REPLICATION=OFF;
+
+OK</code></pre></li></ul><p id="25ef567a-e165-8121-bbe1-db29cd72db47" class="" dir="auto">
+</p><p id="25ef567a-e165-8145-bfff-c2657259282a" class="" dir="auto">HA 환경에서 PK를 복제키로 사용하던 중 다른 컬럼으로 변경해야한다면 다음 SQL문을 사용해 변경할 수 있다.</p><ul id="25ef567a-e165-812e-9e01-ea0be28193c0" class="bulleted-list" dir="auto"><li style="list-style-type:disc">예시 7. Multiple ALTER<pre id="25ef567a-e165-81f5-9178-c42f5395e892" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; ALTER TABLE tbl DROP CONSTRAINT ..., ADD CONSTRAINT ...;</code></pre></li></ul><p id="25ef567a-e165-81dd-9541-cd9518a26e0d" class="" dir="auto">
+</p><h3 id="25ef567a-e165-8104-a5b3-c28c55785728" class="" dir="auto">2-3. REPLICATION 조회</h3><p id="25ef567a-e165-81d3-a702-e50ad3fc8ce1" class="" dir="auto">사용자는 <em>REPLICATION</em> 정보를 조회할 수 있어야하며, 아래는 일부 예시를 보인다</p><ul id="25ef567a-e165-8155-90d7-ffadeae5e4f4" class="bulleted-list" dir="auto"><li style="list-style-type:disc">예시 8. show create table table_name<pre id="25ef567a-e165-81c9-8f1d-eca31528b040" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; show create table tbl;
+
+=== &lt;Result of SELECT Command in Line 1&gt; ===
+
+  TABLE                 CREATE TABLE
+============================================
+  &#x27;dba.tbl&#x27;             &#x27;CREATE TABLE [tbl] ([a] INTEGER NOT NULL, [b] INTEGER,  CONSTRAINT [pk_tbl_a] PRIMARY KEY  (
+[a])) REUSE_OID, COLLATE utf8_bin, REPLICATION ON&#x27;</code></pre></li></ul><ul id="25ef567a-e165-81aa-9db4-f9a625a72bb9" class="bulleted-list" dir="auto"><li style="list-style-type:disc">예시 9. select * from db_class<pre id="25ef567a-e165-8149-a093-d6afcce0c38c" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; select * from db_class;
+
+=== &lt;Result of SELECT Command in Line 1&gt; ===
+
+&lt;00064&gt; class_name        : &#x27;tbl&#x27;
+        owner_name        : &#x27;DBA&#x27;
+        class_type        : &#x27;CLASS&#x27;
+        is_system_class   : &#x27;NO&#x27;
+        tde_algorithm     : &#x27;NONE&#x27;
+        partitioned       : &#x27;NO&#x27;
+        is_reuse_oid_class: &#x27;YES&#x27;
+        collation         : &#x27;utf8_bin&#x27;
+        comment           : NULL
+        replication       : ON</code></pre></li></ul><p id="25ef567a-e165-813d-b5d6-c71494924fd8" class="" dir="auto">
+</p><h2 id="25ef567a-e165-8116-871a-d9d46cb0a2c0" class="" dir="auto">3. Single 제약사항</h2><p id="25ef567a-e165-8192-a932-f0b66e31cedb" class="" dir="auto"><span style="border-bottom:0.05em solid">제약은 없으나 “2. 변경되거나 추가된 SQL” 에서 추가된 모든 SQL 을 사용해 복제 대상 및 복제 제외 테이블을 생성할 수 있다.</span> 싱글 모드에서 생성된 복제 키가 없는 테이블은 HA모드 전환 시 복제 키를 추가하거나 복제 제외 테이블로 변경할 수 있어야한다. 따라서 <em>REPLICATION</em> 옵션 사용은 싱글 모드에서도 가능하다.</p><p id="25ef567a-e165-8177-b76f-d696e6487fb9" class="" dir="auto">
+</p><h2 id="25ef567a-e165-8116-b49e-c31c9fefac9b" class="" dir="auto">4. HA 제약사항(운영 중)</h2><p id="25ef567a-e165-80ef-a374-cf03f3cf23b3" class="" dir="auto">HA 환경에서 마스터에서 수행된 DDL은 모두 슬레이브로 복제된다. 단, 복제 옵션이 ON인 경우의 데이터만 슬레이브로 복제되며, 이로인해 마스터와 슬레이브의 데이터는 불일치 될 수 있다.</p><p id="25ef567a-e165-8196-8d62-e9e2e1cbd019" class="" dir="auto">HA 환경 복제 제외테이블은  “<em>ALTER TABLE … REPLICATION=ON</em>” 을 이용한 복제 테이블로 변경하는것 외의 모든 DDL을 사용할 수 있다. 반면 복제 대상의 경우 다음 DDL에 대한 제약 사항이 존재한다.</p><h3 id="25ef567a-e165-8165-8dec-df2dc6fb7742" class="" dir="auto">4-1. CREATE TABLE</h3><p id="25ef567a-e165-8171-b472-f3ca79326aa7" class="" dir="auto">HA 모드에서는 <em>CREATE TABLE</em> 시 복제키가 없는 복제 테이블을 생성할 수 없으며, 나머지 기능은 “2-1. <em>CREATE TABLE</em> 옵션 추가”와 동일하다. </p><ul id="25ef567a-e165-8143-81dd-dd4a3c4a9c4f" class="bulleted-list" dir="auto"><li style="list-style-type:disc">예시 10. 복제 테이블에는 반드시 복제 키 후보가 1개 이상 필요하다<pre id="25ef567a-e165-8187-b3a7-e28561b2a26d" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE repl_table_with_rk(
+	a INT
+); 
+
+ERROR</code></pre></li></ul><h3 id="25ef567a-e165-811d-a284-ea5e39b2338c" class="" dir="auto">4-2. ALTER TABLE</h3><p id="25ef567a-e165-81ad-b72e-ee2bae96605d" class="" dir="auto">HA 모드에서 복제 테이블에는 하나 이상의 복제키 후보가 필요하며, 이로인해 다음 제약사항이 존재한다.</p><ul id="25ef567a-e165-8177-ba3b-c93a0ebbea67" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><span style="border-bottom:0.05em solid">복제키는 큐브리드 엔진에 의해 결정되며</span>, 사용자는 복제키를 직접 수정할 수 없다.</li></ul><ul id="25ef567a-e165-817c-aad5-dd188700749f" class="bulleted-list" dir="auto"><li style="list-style-type:disc">테이블에 하나의 복제키만 존재한다면 복제키를 수정하는 DDL이 제한되지만, 다른 복제키 후보가 함께 존재한다면 모든 DDL은 허용된다(단, 기존의 제약사항은 유지된다.)</li></ul><p id="25ef567a-e165-8164-ba1a-da91b46a25f6" class="" dir="auto">
+</p><p id="25ef567a-e165-814c-bdbf-d28083b73dc5" class="" dir="auto">복제키 후보가 1개인 경우(= 복제키) 제약사항은 다음과 같다. </p><aside class="block-color-gray_background callout" data-notion-callout="" data-notion-callout-icon="💡" data-notion-callout-background="gray_background" style="white-space:pre-wrap;display:flex" id="25ef567a-e165-8142-8d7d-f4e271e431b7" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="💡"></span></div><div style="width:100%"><p id="25ef567a-e165-81c1-9565-eb25377d39c1" class="" dir="auto">기존의 연산 결과와 동일한 경우 PK, UK를 비교하기위한 예시만 표기한다.</p></div></aside><ul id="25ef567a-e165-81a2-a830-d21c5ab01d0e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">PK를 복제키로 사용하는 경우 <ul id="25ef567a-e165-81f0-a323-fc6c09379158" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 11. PK 혹은 PK속성을 갖는 컬럼 추가: 하나의 테이블에는 여러 PK가 존재할 수 없다. (기존과 동일)<pre id="25ef567a-e165-81fb-b5c8-e58454520b7f" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">// PK 추가
+csql&gt; ALTER TABLE table_name ADD CONSTRAINT PRIMARY KEY(b);
+// PK 컬럼 추가
+csql&gt; ALTER TABLE table_name ADD COLUMN (b INT PRIMARY KEY);
+
+ERROR: Primary key &quot;pk_tbl_a&quot; already defined for class &quot;dba.tbl&quot;.</code></pre></li></ul><ul id="25ef567a-e165-81f4-bf72-e843b2d98668" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 12. DROP PK: HA 환경에서 PK가 복제키로 사용될 경우 이 PK 혹은 PK 컬럼은 삭제할 수 없다.<pre id="25ef567a-e165-818d-af60-e054b4f6c289" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">// PK 삭제
+csql&gt; ALTER TABLE table_name DROP PRIMARY KEY;
+// PK 컬럼 삭제
+csql&gt; ALTER TABLE table_name DROP COLUMN b;
+
+ERROR</code></pre></li></ul><ul id="25ef567a-e165-81e7-aec2-fdf5c2d8b1ab" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 13. PK 를 다른 컬럼으로 변경<pre id="25ef567a-e165-818e-b637-de3189206810" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; ALTER TABLE table_name DROP CONSTRAINT PRIMARY KEY, 
+ADD CONSTRAINT PRIMARY KEY(a);
+
+OK</code></pre></li></ul><aside class="block-color-gray_background callout" data-notion-callout="" data-notion-callout-icon="💡" data-notion-callout-background="gray_background" style="white-space:pre-wrap;display:flex" id="25ef567a-e165-8195-877f-d22a02fe224b" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="💡"></span></div><div style="width:100%"><p id="25ef567a-e165-8173-a4c1-cd086ecf1917" class="" dir="auto">복제키를 PK에서 UK로 변경하는 경우, 테이블에 UK가 추가됨에 제약은 없으므로 UK 추가(ADD CONSTRAINT, PK 제거(DROP CONSTRAINT) 로 가이드 됨. </p></div></aside></li></ul><ul id="25ef567a-e165-81ac-b13d-dd4ed0664d6e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">UK 를 복제키로 사용하는 경우<ul id="25ef567a-e165-812b-ab88-e4477db1f13f" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 14. PK 추가: UK를 복제키로 사용하고 있는 테이블은 PK가 없으므로 추가 가능(기존과 동일)<pre id="25ef567a-e165-81d7-8cfb-d764937cf467" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">// PK 추가
+csql&gt; ALTER TABLE table_name ADD CONSTRAINT PRIMARY KEY(b);
+// PK 컬럼 추가
+csql&gt; ALTER TABLE table_name ADD COLUMN (b INT PRIMARY KEY);
+
+OK</code></pre></li></ul><ul id="25ef567a-e165-8165-b26e-f5d4dd50d42e" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 15. UNIQUE 제약 삭제: 복제 키로 사용중인 컬럼은 UNIQUE 제약을 삭제할 수 없음<pre id="25ef567a-e165-8114-ba42-cea634591f32" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">// UK 속성 삭제
+csql&gt; ALTER TABLE table_name DROP CONSTRAINT u_tbl_a;
+// UK 컬럼 삭제
+csql&gt; ALTER TABLE table_name DROP COLUMN a;
+
+ERROR</code></pre></li></ul><ul id="25ef567a-e165-81ec-b577-f638764395bd" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 16. DROP INDEX: 복제키 후보가 없다면 삭제 불가<pre id="25ef567a-e165-81db-a548-f8d286d70c63" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; DROP INDEX idx_id ON tbl;
+
+ERROR</code></pre></li></ul><p id="25ef567a-e165-81d7-acb0-e2191a0d2e1a" class="" dir="auto">
+</p></li></ul><h2 id="25ef567a-e165-81b9-b77a-d50be1042505" class="" dir="auto">5. 외래키</h2><p id="25ef567a-e165-8199-a0ea-c6efb1f95520" class="" dir="auto">사용자가 HA 모드에서 외래키를 포함한 테이블을 생성한다면 참조 테이블 역시 반드시 복제 대상 테이블이여야한다. 만약 참조 테이블이 복제 대상 테이블이 아니라면 다음과 같은 문제가 발생할 수 있다.</p><figure id="25ef567a-e165-817e-97aa-f94b01f3f2b8" class="image" data-notion-image="%EC%82%AC%EC%9A%A9%EC%9E%90%20%EC%8A%A4%ED%8E%99/image.png" dir="ltr"><a href="%EC%82%AC%EC%9A%A9%EC%9E%90%20%EC%8A%A4%ED%8E%99/image.png"><img style="width:2308px" src="%EC%82%AC%EC%9A%A9%EC%9E%90%20%EC%8A%A4%ED%8E%99/image.png"/></a></figure><ol type="1" id="25ef567a-e165-81d9-badc-de885d9e62fa" class="numbered-list" start="1" dir="auto"><li>HA 실행 시 참조 테이블은 복제 대상이 아니므로 Slave로 복제되지 않고, 오직 외래키 테이블만 복제 됨</li></ol><ol type="1" id="25ef567a-e165-818c-8127-f4d3e26fca0b" class="numbered-list" start="2" dir="auto"><li>Failover 발생</li></ol><ol type="1" id="25ef567a-e165-811c-bd01-ede31e878921" class="numbered-list" start="3" dir="auto"><li>어플리케이션에서 “orders” 데이터 접근</li></ol><ol type="1" id="25ef567a-e165-811e-beee-f215ba272fac" class="numbered-list" start="4" dir="auto"><li>외래키로 참조할 “customers” 가 존재하지 않음</li></ol><p id="25ef567a-e165-813f-9912-f2dfc41357a7" class="" dir="auto">
+</p><p id="25ef567a-e165-81bb-9075-c71ea72d9a2b" class="" dir="auto">이러한 에러 상황을 막기위해 <span style="border-bottom:0.05em solid">외래키 테이블에서 참조하는 모든 테이블은 복제 대상이여야한다. 또한 HA 모드 실행 시 외래키 테이블에서 참조하는 테이블의 상태도 확인해 복제 제외 테이블을 참조할 경우 에러를 출력할 수 있어야한다.</span></p><p id="25ef567a-e165-813b-840a-dce4d01243f8" class="" dir="auto">
+</p><h3 id="25ef567a-e165-81d8-ae1e-eb234e22a298" class="" dir="auto">5-1. CRATE TABLE 예시</h3><ul id="25ef567a-e165-815b-aec7-d65cd00cf400" class="bulleted-list" dir="auto"><li style="list-style-type:disc">예시 17. 복제 테이블 참조 예시<pre id="25ef567a-e165-8173-9409-d3f44df7d921" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE customers(
+	customer_id INT PRIMARY KEY,
+	country INT
+);
+
+csql&gt; CREATE TABLE orders(
+	order_id INT PRIMARY KEY,
+	customer_id INT,
+	CONSTRAINT fk_customer_id FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+OK</code></pre><p id="25ef567a-e165-81e9-be1a-e9619094f8da" class="" dir="auto">
+</p></li></ul><ul id="25ef567a-e165-81eb-b437-cf760db4d8d1" class="bulleted-list" dir="auto"><li style="list-style-type:disc">예시 18. 복제 제외 테이블 참조 예시<pre id="25ef567a-e165-81d7-bcb9-e6c9f1f1d4dc" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE non_repl_customers(
+	customer_id INT PRIMARY KEY,
+	country INT
+)REPLICATION=OFF;
+
+csql&gt; CREATE TABLE orders(
+	order_id INT PRIMARY KEY,
+	customer_id INT,
+	CONSTRAINT fk_customer_id FOREIGN KEY (customer_id) 
+	REFERENCES non_repl_customers(customer_id)
+);
+
+ERROR
+</code></pre></li></ul><p id="25ef567a-e165-81e6-be91-fca7ed4cd582" class="" dir="auto">
+</p><h3 id="25ef567a-e165-81e8-afb4-cb66b1dbc82e" class="" dir="auto">5-2. ALTER TABLE 예시</h3><ul id="25ef567a-e165-81d5-ba51-cb2e11dd7b8b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">복제 테이블을 참조예시<ul id="25ef567a-e165-8126-9ddb-f2638677e398" class="bulleted-list" dir="auto"><li style="list-style-type:circle"> 예시 19. 외래키 추가 <pre id="25ef567a-e165-817c-80ae-e097ec746607" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE new_orders(
+	order_id INT PRIMARY KEY,
+	customer_id INT
+);
+
+// customers 는 예시 17의 테이블
+csql&gt; ALTER TABLE new_orders ADD CONSTRAINT FOREIGN KEY(customer_id) 
+REFERENCES customers(customer_id);
+
+OK</code></pre></li></ul><ul id="25ef567a-e165-817f-902e-d833305308d0" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 20. 외래키 컬럼 추가<pre id="25ef567a-e165-81ac-b966-de6ac952b68d" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE new_orders(
+	order_id INT PRIMARY KEY
+);
+
+// customers 는 예시 17의 테이블
+csql&gt; ALTER TABLE new_orders ADD COLUMN 
+(customer_id INT FOREIGN KEY REFERENCES customers(customer_id));
+
+OK</code></pre></li></ul><ul id="25ef567a-e165-817f-8552-f4376beaf129" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 21. 복제 테이블을 참조하는 외래키 제거<pre id="25ef567a-e165-81a1-826c-d60e688ca894" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; ALTER TABLE new_orders DROP FOREIGN KEY (fk_new_orders_customer_id);
+
+OK</code></pre></li></ul><ul id="25ef567a-e165-8127-bae5-f9991d919ae2" class="bulleted-list" dir="auto"><li style="list-style-type:circle">예시 22. 복제 테이블을 참조하는 외래키 컬럼 제거<pre id="25ef567a-e165-814b-8c34-fc33579e2e3d" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; ALTER TABLE new_orders DROP COLUMN customer_id;
+
+OK</code></pre></li></ul></li></ul><ul id="25ef567a-e165-81ea-a9eb-c4f13920ba55" class="bulleted-list" dir="auto"><li style="list-style-type:disc">복제 제외 테이블 참조 예시<ul id="25ef567a-e165-8101-8e10-c20d5f1998d3" class="bulleted-list" dir="auto"><li style="list-style-type:circle">외래키 추가 <pre id="25ef567a-e165-818c-91a8-fb41abc7787f" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE new_orders(
+	order_id INT PRIMARY KEY
+);
+
+// customers 는 예시 18의 테이블
+csql&gt; ALTER TABLE new_orders ADD CONSTRAINT FOREIGN KEY(order_id) 
+REFERENCES non_repl_customers(customer_id);
+
+ERROR</code></pre></li></ul><ul id="25ef567a-e165-8139-9681-e148f5ebf889" class="bulleted-list" dir="auto"><li style="list-style-type:circle"> 예시 23. 외래키 컬럼 추가<pre id="25ef567a-e165-8165-9ea5-ce22ec0a8cfe" class="code code-wrap" data-notion-code-syntax="sql"><code class="language-sql" style="white-space:pre-wrap;word-break:break-all">csql&gt; CREATE TABLE new_orders(
+	order_id INT PRIMARY KEY,
+);
+
+// customers 는 예시 18의 테이블
+csql&gt; ALTER TABLE new_orders ADD COLUMN 
+(customer_id INT FOREIGN KEY REFERENCES non_repl_customers(customer_id));
+
+ERROR</code></pre></li></ul></li></ul><h2 id="25ef567a-e165-803e-a157-f11f97869b63" class="" dir="auto">6. 뷰(VIEW)</h2><p id="25ef567a-e165-805b-a192-dfeb100dd196" class="" dir="auto">HA 환경에서 수행된 모든 DDL이 슬레이브에 반영됨에 따라 Failover 후 뷰 사용에는 제약이 없다. 단, 복제 제외 테이블이 뷰에 포함되어 있을 경우, 복제 제외테이블에는 데이터가 존재하지 않아 수행의 결과는 두 노드가 일치하지 않는다. 이 부분에대해 큐브리드 복제 모듈은 책임지지 않는다.</p><h2 id="25ef567a-e165-8166-b6d2-dd3b8015165b" class="" dir="auto">7. HA 전환</h2><p id="25ef567a-e165-8118-aa90-c2970878de99" class="" dir="auto">HA 실행시 다음 사항을 제약사항을 확인하며, 제약사항 위반 시 에러와함께 파일 리스트를 출력한다</p><ul id="25ef567a-e165-815d-af37-d8eb9922b6a1" class="bulleted-list" dir="auto"><li style="list-style-type:disc">복제 테이블에 복제키가 존재하지 않는 경우</li></ul><ul id="25ef567a-e165-81cb-9d59-f16d05c48cfc" class="bulleted-list" dir="auto"><li style="list-style-type:disc">외래키를 포함하는 복제 테이블의 참조 테이블이 복제 대상이 아닌경우</li></ul><p id="25ef567a-e165-81a0-92fb-ef23200bf410" class="" dir="auto">
+</p><p id="25ef567a-e165-813e-af8f-f16c1eafe36b" class="" dir="auto">이 경우 싱글모드에서 ALTER TABLE… 을 이용해 복제 키에 해당하는 제약을 추가하거나 복제 제외 대상으로 변경한 후 HA를 재시작해아한다</p><p id="25ef567a-e165-8144-9d0f-e0f0a5bf333d" class="" dir="auto">
+</p><h3 id="25ef567a-e165-8123-b55b-e9ef475f5743" class="" dir="auto">8. UNLOADDB &amp; LOADDB</h3><ul id="25ef567a-e165-8115-bb54-d327dbdebb73" class="bulleted-list" dir="auto"><li style="list-style-type:disc">unload 시 복제 테이블의 여부를 함께 저장한다.</li></ul><ul id="25ef567a-e165-812b-a3ae-e5c6200a217b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">load시 복제 여부를 저장하는 변수에따라 복제 테이블 혹은 복제 제외 테이블로 생성된다<ul id="265f567a-e165-80da-b2a4-e2820bbe67eb" class="bulleted-list" dir="auto"><li style="list-style-type:circle">복제 테이블의 경우 큐브리드는 자동으로 RK를 할당한다.</li></ul><ul id="265f567a-e165-808a-bd4a-d3cc4b06f6fc" class="bulleted-list" dir="auto"><li style="list-style-type:circle">복제 여부를 저장하는 변수가 설정되어 있지 않다면 복제 대상(Default)으로 간주한다.</li></ul><ul id="265f567a-e165-800f-9e8b-fb1b3ba0ece0" class="bulleted-list" dir="auto"><li style="list-style-type:circle">특히 하위 버전에서 unload 한 데이터 파일에는 복제 여부를 저장하는 변수가 설정되어있지 않으므로 (싱글 모드에서) load 시 모두 복제 테이블로 설정된다.</li></ul></li></ul><p id="25ef567a-e165-81e1-a4ff-ca15dcffd2e9" class="" dir="auto">
+</p><h3 id="25ef567a-e165-817f-970d-c374ed8849f5" class="" dir="auto">9. SUMMARY </h3><ol type="1" id="25ef567a-e165-81bb-a2b3-f57e4796b73c" class="numbered-list" start="1" dir="auto"><li>REPLICATION 를 통해 복제 대상과 복제 제외를 구분할 수 있다<ol type="a" id="25ef567a-e165-8135-bcd3-d8c107e66ce3" class="numbered-list" start="1" dir="auto"><li>이 키워드는 싱글 이나 SA에서도 사용 가능</li></ol><ol type="a" id="25ef567a-e165-816f-850b-ea6b60030b08" class="numbered-list" start="2" dir="auto"><li>RK가 있는 테이블 역시 복제 제외대상이 될 수 있음</li></ol></li></ol><ol type="1" id="25ef567a-e165-81f2-897f-dc83948c40b3" class="numbered-list" start="2" dir="auto"><li>HA 모드에서 복제 대상 테이블은 반드시 RK가 하나 이상 존재해야한다</li></ol><ol type="1" id="25ef567a-e165-8155-8ea0-f95a59dc951f" class="numbered-list" start="3" dir="auto"><li>복제 대상인 외래키 테이블에서 참조하는 모든 테이블이 복제 대상이여야한다</li></ol><ol type="1" id="25ef567a-e165-812e-9891-e51ab0790e2a" class="numbered-list" start="4" dir="auto"><li>HA 전환 시 복제 대상에 RK가 존재하지 않는다면 사용자는 싱글모드에서 재구성 후 HA모드로 전환해야한다.</li></ol><ol type="1" id="25ef567a-e165-810f-bef6-f5ba3eec66fd" class="numbered-list" start="5" dir="auto"><li>UNLOADDB 시 복제 대상 여부를 함께 출력해야하며, 이를 포함하지 않는 테이블은 모두 복제 제외 테이블이다.</li></ol><p id="25ef567a-e165-8147-9197-fdad9d572828" class="" dir="auto">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

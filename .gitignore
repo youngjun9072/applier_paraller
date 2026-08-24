@@ -1,0 +1,3 @@
+.omc/
+*.conflict*
+node_modules/

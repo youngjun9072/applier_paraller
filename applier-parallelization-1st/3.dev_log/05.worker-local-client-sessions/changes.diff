@@ -1,0 +1,215 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 15fafbeef..bce7345bf 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -654,7 +654,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+ endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+ 
+ # common definitions
+-set(COMMON_DEFS SYSV MAXPATHLEN=1024 -D_REENTRANT)
++set(COMMON_DEFS SYSV MAXPATHLEN=1024 -D_REENTRANT MULTI_CONN_TO_A_SERVER)
+ 
+ # For systemtap options
+ if(ENABLE_SYSTEMTAP)
+diff --git a/broker/CMakeLists.txt b/broker/CMakeLists.txt
+index 00eca5874..f377b397e 100644
+--- a/broker/CMakeLists.txt
++++ b/broker/CMakeLists.txt
+@@ -17,7 +17,7 @@
+ #
+ 
+ #set(BROKER_DEFS _BSD_SOURCE _XOPEN_SOURCE ASYNC_MODE CAS_BROKER)
+-set(BROKER_DEFS _XOPEN_SOURCE ASYNC_MODE CAS_BROKER)
++set(BROKER_DEFS _XOPEN_SOURCE ASYNC_MODE CAS_BROKER MULTI_CONN_TO_A_SERVER)
+ 
+ set(CUB_BROKER_SOURCES
+   ${BROKER_DIR}/broker.c
+diff --git a/cm_common/CMakeLists.txt b/cm_common/CMakeLists.txt
+index 3686f6a5e..06723a625 100644
+--- a/cm_common/CMakeLists.txt
++++ b/cm_common/CMakeLists.txt
+@@ -40,6 +40,7 @@ endif(WIN32)
+ add_library(cmstat SHARED ${CMSTAT_SOURCES})
+ set_target_properties(cmstat PROPERTIES SOVERSION "${CUBRID_MAJOR_VERSION}.${CUBRID_MINOR_VERSION}")
+ set_target_properties(cmstat PROPERTIES PUBLIC_HEADER "${CM_COMMON_DIR}/cm_stat.h")
++target_compile_definitions(cmstat PRIVATE ${COMMON_DEFS})
+ target_include_directories(cmstat PRIVATE ${JAVA_INC})
+ target_link_libraries(cmstat LINK_PRIVATE brokeradmin)
+ if(${CMAKE_SYSTEM_NAME} MATCHES "AIX")
+@@ -66,6 +67,7 @@ SET_SOURCE_FILES_PROPERTIES(
+ add_library(cmdep SHARED ${CMDEP_SOURCES})
+ set_target_properties(cmdep PROPERTIES SOVERSION "${CUBRID_MAJOR_VERSION}.${CUBRID_MINOR_VERSION}")
+ set_target_properties(cmdep PROPERTIES PUBLIC_HEADER "${CM_COMMON_DIR}/cm_dep.h")
++target_compile_definitions(cmdep PRIVATE ${COMMON_DEFS})
+ target_link_libraries(cmdep LINK_PRIVATE cubridcs)
+ if(WIN32)
+   set_target_properties(cmdep PROPERTIES LINK_FLAGS "/DEF:\"${CMAKE_SOURCE_DIR}/win/cmdep/cmdep.def\"")
+@@ -84,6 +86,7 @@ if(WIN32)
+   list(APPEND CUB_JOBSA_SOURCES ${CMAKE_BINARY_DIR}/version.rc)
+ endif(WIN32)
+ add_executable(cub_jobsa ${CUB_JOBSA_SOURCES})
++target_compile_definitions(cub_jobsa PRIVATE ${COMMON_DEFS})
+ target_link_libraries(cub_jobsa cubridsa)
+ 
+ 
+@@ -98,6 +101,7 @@ if(WIN32)
+   list(APPEND CUB_SAINFO_SOURCES ${CMAKE_BINARY_DIR}/version.rc)
+ endif(WIN32)
+ add_executable(cub_sainfo ${CUB_JOBSA_SOURCES})
++target_compile_definitions(cub_sainfo PRIVATE ${COMMON_DEFS})
+ target_link_libraries(cub_sainfo cubridsa)
+ 
+ install(TARGETS cmstat cmdep cub_jobsa cub_sainfo
+diff --git a/cs/CMakeLists.txt b/cs/CMakeLists.txt
+index f015c2563..029a2ae03 100644
+--- a/cs/CMakeLists.txt
++++ b/cs/CMakeLists.txt
+@@ -574,7 +574,7 @@ add_library(cubridcs SHARED
+   )
+ set_target_properties(cubridcs PROPERTIES SOVERSION "${CUBRID_MAJOR_VERSION}.${CUBRID_MINOR_VERSION}")
+ 
+-target_compile_definitions(cubridcs PRIVATE CS_MODE CUBRID_EXPORTING MULTI_CONN_TO_A_SERVER ${COMMON_DEFS})
++target_compile_definitions(cubridcs PRIVATE CS_MODE CUBRID_EXPORTING ${COMMON_DEFS})
+ if(WIN32)
+   set_source_files_properties(${HEAPLAYERS_DIR}/customheaps.cpp PROPERTIES COMPILE_FLAGS -Od)
+   SET_SOURCE_FILES_PROPERTIES(
+diff --git a/sa/CMakeLists.txt b/sa/CMakeLists.txt
+index e51ce2d84..1ed7f905b 100644
+--- a/sa/CMakeLists.txt
++++ b/sa/CMakeLists.txt
+@@ -715,7 +715,7 @@ add_library(cubridsa SHARED
+   )
+ set_target_properties(cubridsa PROPERTIES SOVERSION "${CUBRID_MAJOR_VERSION}.${CUBRID_MINOR_VERSION}")
+ 
+-target_compile_definitions(cubridsa PRIVATE SA_MODE CUBRID_EXPORTING MULTI_CONN_TO_A_SERVER ${COMMON_DEFS})
++target_compile_definitions(cubridsa PRIVATE SA_MODE CUBRID_EXPORTING ${COMMON_DEFS})
+ if(WIN32)
+   set_source_files_properties(${BASE_DIR}/message_catalog.c PROPERTIES COMPILE_FLAGS -DNDEBUG)
+   set_source_files_properties(${HEAPLAYERS_DIR}/customheaps.cpp PROPERTIES COMPILE_FLAGS -Od)
+diff --git a/src/transaction/log_applier.c b/src/transaction/log_applier.c
+index ba9f4e4e6..0383c2670 100644
+--- a/src/transaction/log_applier.c
++++ b/src/transaction/log_applier.c
+@@ -56,6 +56,7 @@
+ #include "db.h"
+ #include "object_accessor.h"
+ #include "locator_cl.h"
++#include "network_cl.h"
+ #include "network_interface_cl.h"
+ #include "schema_system_catalog_constants.h"
+ #include "file_io.h"
+@@ -626,6 +627,8 @@ static int la_reader_commit_apply_info (void);
+ static void *la_apply_worker_main (void *arg);
+ static void la_apply_worker_init (LA_APPLY_WORKER * worker);
+ static void la_apply_worker_destroy (LA_APPLY_WORKER * worker);
++static int la_apply_worker_start_session (void);
++static void la_apply_worker_end_session (bool session_started);
+ static int la_start_apply_workers (void);
+ static void la_stop_apply_workers (void);
+ static int la_enqueue_apply_task (LA_APPLY_WORKER * worker, const LA_APPLY_TASK * task);
+@@ -790,6 +793,37 @@ la_try_dequeue_apply_result (LA_APPLY_WORKER * worker, LA_APPLY_RESULT * result)
+   return error;
+ }
+ 
++static int
++la_apply_worker_start_session (void)
++{
++#if defined(CS_MODE) && defined(MULTI_CONN_TO_A_SERVER)
++  int error;
++
++  error = net_client_sub_init ();
++  if (error != NO_ERROR)
++    {
++      return error;
++    }
++#endif
++
++  __gv_loc_repl.ws_init_repl_objs ();
++
++  return NO_ERROR;
++}
++
++static void
++la_apply_worker_end_session (bool session_started)
++{
++  if (session_started)
++    {
++      __gv_loc_repl.ws_clear_all_repl_objs ();
++      __gv_loc_repl.ws_clear_all_repl_errors_of_error_link ();
++#if defined(CS_MODE) && defined(MULTI_CONN_TO_A_SERVER)
++      net_client_sub_final ();
++#endif
++    }
++}
++
+ static int
+ la_collect_apply_results (void)
+ {
+@@ -826,10 +860,21 @@ la_apply_worker_main (void *arg)
+ {
+   LA_APPLY_WORKER *worker = (LA_APPLY_WORKER *) arg;
+   cuberr::context *er_context_p = NULL;
++  bool session_started = false;
++  int error = NO_ERROR;
+ 
+   er_context_p = new cuberr::context ();
+   er_context_p->register_thread_local ();
+ 
++  error = la_apply_worker_start_session ();
++  if (error != NO_ERROR)
++    {
++      la_applier_need_shutdown = true;
++      goto end;
++    }
++
++  session_started = true;
++
+   while (true)
+     {
+       LA_APPLY_TASK task;
+@@ -862,6 +907,9 @@ la_apply_worker_main (void *arg)
+ 	}
+     }
+ 
++end:
++  la_apply_worker_end_session (session_started);
++
+   er_context_p->deregister_thread_local ();
+   delete er_context_p;
+ 
+diff --git a/util/CMakeLists.txt b/util/CMakeLists.txt
+index 29741a333..2031e063a 100644
+--- a/util/CMakeLists.txt
++++ b/util/CMakeLists.txt
+@@ -113,6 +113,7 @@ if(WIN32)
+   list(APPEND CUBRID_SOURCES ${CMAKE_BINARY_DIR}/version.rc)
+ endif(WIN32)
+ add_executable(cubrid-bin ${CUBRID_SOURCES})
++target_compile_definitions(cubrid-bin PRIVATE ${COMMON_DEFS})
+ 
+ if(WIN32)
+   if(MSVC_VERSION LESS 1600)
+@@ -143,6 +144,7 @@ endif(WIN32)
+ 
+ add_executable(cub_commdb ${CUB_COMMDB_SOURCES})
+ 
++target_compile_definitions(cub_commdb PRIVATE ${COMMON_DEFS})
+ target_link_libraries(cub_commdb LINK_PRIVATE cubridcs)
+ if(WIN32)
+   target_link_libraries(cub_commdb LINK_PRIVATE ws2_32)
+@@ -158,6 +160,7 @@ if(WIN32)
+   list(APPEND CUBRID_REL_SOURCES ${CMAKE_BINARY_DIR}/version.rc)
+ endif(WIN32)
+ add_executable(cubrid_rel ${CUBRID_REL_SOURCES})
++target_compile_definitions(cubrid_rel PRIVATE ${COMMON_DEFS})
+ target_link_libraries(cubrid_rel LINK_PRIVATE cubridsa)
+ 
+ 
+@@ -170,6 +173,7 @@ if(WIN32)
+   list(APPEND LOADJAVA_SOURCES ${CMAKE_BINARY_DIR}/version.rc)
+ endif(WIN32)
+ add_executable(loadjava ${LOADJAVA_SOURCES})
++target_compile_definitions(loadjava PRIVATE ${COMMON_DEFS})
+ if(UNIX)
+   target_link_libraries(loadjava LINK_PRIVATE cubridsa)
+   target_link_libraries(loadjava PUBLIC stdc++fs)
