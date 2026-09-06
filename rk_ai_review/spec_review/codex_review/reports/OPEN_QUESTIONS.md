@@ -1,6 +1,6 @@
 # CUBRID HA 복제 키 스펙 미결 질문
 
-> **후속 필터링 주의:** 아래 질문은 삭제하지 않은 원래 목록이다. 기능 코드가 이미 답한 전제와 CUBRID 비적용 항목은 [CUBRID_FIT_FILTER_FEATURE.md](CUBRID_FIT_FILTER_FEATURE.md)에 기각·폐기로 표시했으므로, 새 기능 스펙 결정 목록을 만들 때 최신 판정을 우선 적용한다.
+> **후속 필터링 주의:** 아래 질문은 삭제하지 않은 원래 목록이다. 기능 코드가 이미 답한 전제와 CUBRID 비적용 항목은 [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md)에 기각·폐기로 표시했으므로, 새 기능 스펙 결정 목록을 만들 때 최신 판정을 우선 적용한다.
 
 이 문서는 `user_spec.html`과 20개 역할·경력 관점에서 작성한 확장 원시 리뷰 691건을 바탕으로, 구현 전에 결정권자가 답해야 할 질문을 모은 것이다. 질문에 답이 없다는 것은 단순한 문서 누락이 아니라 서로 다른 구현이 모두 가능하다는 뜻이다. `Blocker`는 답이 정해지기 전 구현·출시 기준을 확정하면 안 되는 항목이다.
 

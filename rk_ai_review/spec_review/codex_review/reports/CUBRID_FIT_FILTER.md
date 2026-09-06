@@ -1,6 +1,6 @@
 # CUBRID `develop` 기준 새 기능 스펙 리뷰 필터링
 
-> **이전 기준 이력:** 이 문서는 기능 구현을 보기 전 로컬 `develop`만으로 작성한 1차 필터이며 최종 판정이 아니다. `feature/CBRD-26246-develop @44468ed73` 구현까지 대조한 최신 결과는 [CUBRID_FIT_FILTER_FEATURE.md](CUBRID_FIT_FILTER_FEATURE.md)를 사용한다. 아래 내용은 판정 변경 이력을 보존하기 위해 삭제하지 않았다.
+> **이전 기준 이력:** 이 문서는 기능 구현을 보기 전 로컬 `develop`만으로 작성한 1차 필터이며 최종 판정이 아니다. `feature/CBRD-26246-develop @44468ed73` 구현까지 대조한 최신 결과는 [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md)를 사용한다. 아래 내용은 판정 변경 이력을 보존하기 위해 삭제하지 않았다.
 
 - 작성일: 2026-08-23
 - 원본: `CONSOLIDATED_FINDINGS.md`

@@ -1,6 +1,6 @@
 # CUBRID HA 복제 키 확장 통합 결함 보고서
 
-> **보존 문서:** 아래 CF-01~CF-30은 삭제하지 않은 원래 스펙 리뷰다. `feature/CBRD-26246-develop @44468ed73` 구현과 대조해 확정·기각·폐기·판정불가·코드무관으로 필터링한 최신 결과는 [CUBRID_FIT_FILTER_FEATURE.md](CUBRID_FIT_FILTER_FEATURE.md)에 있다. 구현 우선순위를 정할 때는 후속 판정을 함께 사용해야 한다.
+> **보존 문서:** 아래 CF-01~CF-30은 삭제하지 않은 원래 스펙 리뷰다. `feature/CBRD-26246-develop @44468ed73` 구현과 대조해 확정·기각·폐기·판정불가·코드무관으로 필터링한 최신 결과는 [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md)에 있다. 구현 우선순위를 정할 때는 후속 판정을 함께 사용해야 한다.
 
 - 대상 문서: `../../../user_spec/user_spec.html`
 - 원시 보고서: `raw/*.md` 20개

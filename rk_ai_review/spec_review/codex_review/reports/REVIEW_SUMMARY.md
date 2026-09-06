@@ -1,6 +1,6 @@
 # CUBRID HA 복제 키 사용자 스펙 리뷰 요약
 
-> **기능 구현 대조 필터링 완료:** 이 문서는 코드 확인 전 생성한 원래 스펙 리뷰를 보존한다. `feature/CBRD-26246-develop @44468ed73`을 개발자 직군과 LSP로 대조한 최신 판정은 [CUBRID_FIT_FILTER_FEATURE.md](CUBRID_FIT_FILTER_FEATURE.md)를 우선 확인한다. 결과는 확정 12건, 기각 4건, 폐기 4건, 판정불가 1건, 코드무관 9건이다. 이전 develop-only 판정은 이력으로만 보존한다.
+> **기능 구현 대조 필터링 완료:** 이 문서는 코드 확인 전 생성한 원래 스펙 리뷰를 보존한다. `feature/CBRD-26246-develop @44468ed73`을 개발자 직군과 LSP로 대조한 최신 판정은 [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md)를 우선 확인한다. 결과는 확정 12건, 기각 4건, 폐기 4건, 판정불가 1건, 코드무관 9건이다. 이전 develop-only 판정은 이력으로만 보존한다.
 
 - 대상 문서: `../user_spec/user_spec.html` 1~9절
 - 리뷰 관점: 5개 역할 × 4개 경력 = 20개

@@ -8,7 +8,7 @@
 - 마지막 갱신: 2026-08-24 (Asia/Seoul)
 - 전체 진행: **100% 완료**
 - source 상태: `/home/youngjun/Workspace/claude` detached HEAD, 작업 시작 시 clean
-- review 상태: 재감사 산출물과 독립형 `최종보고서.md` 작성 및 QA 완료.
+- review 상태: 재감사 산출물과 독립형 `CODEX_CODE_REVIEW_FINAL.md` 작성 및 QA 완료.
 
 ### 완료된 범위
 
@@ -51,7 +51,7 @@
 17. `CANDIDATE_AUDIT.md`의 기존 16건 전제를 폐기하고 재집계했다. 확정 feature 결함 10건, 조건부 2건,
     develop 기존/feature 악화 1건, 운영 권고 1건으로 분리했으며 입증 보류·오분석·후속 해결 항목은
     원문을 지우지 않고 보존표에 남겼다.
-18. `최종보고서.md`를 독립형 재감사 결과로 교체하고 기능 목적·방법·수량과 확정 10건의 최소 입력,
+18. `CODEX_CODE_REVIEW_FINAL.md`를 독립형 재감사 결과로 교체하고 기능 목적·방법·수량과 확정 10건의 최소 입력,
     실제 코드/출처 포함 의사 흐름, master/log/applier/slave 결과, develop 대조, 권고를 작성했다.
 19. 최종보고서에 조건부 CR-13/15, develop 기존 CR-12, 운영 권고 OPS-01, 비채택 근거와
     failover/failback/restart 상태표, 수정 우선순위와 E2E 수용 기준까지 추가했다.
@@ -63,7 +63,7 @@
 22. 최종 재독에서 CR-15의 함수 출처가 잘못 적힌 두 곳을 실제 정의인
     `src/query/execute_schema.c:9818-9840`으로 바로잡았다. 확정 finding heading 10개, 페르소나 알림
     20개, feature coverage 35개 파일, 빈 산출물 0개와 source clean 상태를 최종 확인했다.
-23. 팀 공유용 재독을 수행했다. 상위 `README.md`와 `최종보고서.md`만 공유 대상으로 지정하고
+23. 팀 공유용 재독을 수행했다. 상위 `README.md`와 `CODEX_CODE_REVIEW_FINAL.md`만 공유 대상으로 지정하고
     `작업지시.md`와 `reports/`는 내부 감사 자료로 분류했다. 최종본의 로컬 경로·내부 LSP 로그를 줄이고,
     CR-04/06/07의 SQL 선행 조건과 constraint 이름, CR-09의 실제 multi-table grammar 근거를 보강했다.
 

@@ -376,7 +376,7 @@ PM, DBA, 최종 사용자 페르소나는 새 판정을 만드는 데 사용하�
 
 - `FILTERING_INSTRUCTIONS.md`: 이번 스펙 필터링의 재현 가능한 기준, ref, LSP, 페르소나 범위
 - `reports/CUBRID_FIT_FILTER.md`: 이전 develop-only 판정 이력
-- `reports/CUBRID_FIT_FILTER_FEATURE.md`: 기능 브랜치 기준 최종 판정, 구현 근거, 수정 방향
+- `reports/CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md`: 기능 브랜치 기준 최종 판정, 구현 근거, 수정 방향
 - 필요하면 원시 ID를 통합 결함 판정에 연결하는 부록을 둔다. 원시 파일 자체는 수정하지 않는다.
 
 필터링 완료 조건은 30개 통합 결함이 모두 판정되고, 비적용 항목이 삭제 없이 명시되며, 각 판정에 최소 하나 이상의 CUBRID 코드 또는 빌드 근거가 있는 것이다.

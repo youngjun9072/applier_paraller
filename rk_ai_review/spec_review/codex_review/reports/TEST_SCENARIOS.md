@@ -1,6 +1,6 @@
 # CUBRID HA 복제 키 시험 시나리오
 
-> **후속 필터링 주의:** 아래 시나리오는 원래 스펙 리뷰 범위를 보존한다. CUBRID가 지원하지 않는 topology·객체·병렬 apply 전제는 [CUBRID_FIT_FILTER_FEATURE.md](CUBRID_FIT_FILTER_FEATURE.md)의 판정에 따라 제외하고, 확정·판정불가 항목을 우선 시험한다.
+> **후속 필터링 주의:** 아래 시나리오는 원래 스펙 리뷰 범위를 보존한다. CUBRID가 지원하지 않는 topology·객체·병렬 apply 전제는 [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md)의 판정에 따라 제외하고, 확정·판정불가 항목을 우선 시험한다.
 
 - 대상 스펙: ../../user_spec/user_spec.html
 - 근거: `reports/raw/`의 확장 원시 리뷰 691건

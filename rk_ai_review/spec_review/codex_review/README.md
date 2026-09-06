@@ -4,13 +4,13 @@
 
 코드를 보기 전에 이 피처가 무엇을 하려는지와 스펙 자체의 문제를 파악하려면 다음 문서만 읽으면 된다.
 
-- [CONCEPT_VALIDITY_REVIEW.md](reports/CONCEPT_VALIDITY_REVIEW.md) — **코드 비참조 컨셉 리뷰 완결본**
+- [CODEX_SPEC_REVIEW_CONCEPT_VALIDITY.md](reports/CODEX_SPEC_REVIEW_CONCEPT_VALIDITY.md) — **코드 비참조 컨셉 리뷰 완결본**
 
 이 문서는 기능 배경과 제안 동작을 먼저 설명한 뒤, 691개 raw 의견을 30개 주제로 종합해 실패 시나리오·필요한 정책 결정·수용 기준까지 풀어서 설명한다. 현재 코드가 처리한다는 이유로 컨셉 쟁점을 제거하지 않았다.
 
 실제 CUBRID 기능 브랜치 코드와 대조한 구현 상태의 **최종 필터링본**은 다음 문서다.
 
-- [CUBRID_FIT_FILTER_FEATURE.md](reports/CUBRID_FIT_FILTER_FEATURE.md)
+- [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](reports/CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md)
 
 이 문서는 CF-01~CF-30의 코드 근거와 확정·기각·폐기·판정불가·코드무관 판정을 확인할 때 사용한다.
 
@@ -25,8 +25,8 @@
 
 ## 권장 읽기 순서
 
-1. [CONCEPT_VALIDITY_REVIEW.md](reports/CONCEPT_VALIDITY_REVIEW.md) — 기능 의도와 코드 비참조 컨셉 문제 완결본
-2. [CUBRID_FIT_FILTER_FEATURE.md](reports/CUBRID_FIT_FILTER_FEATURE.md) — 현재 구현과 대조한 최종 필터링 판정
+1. [CODEX_SPEC_REVIEW_CONCEPT_VALIDITY.md](reports/CODEX_SPEC_REVIEW_CONCEPT_VALIDITY.md) — 기능 의도와 코드 비참조 컨셉 문제 완결본
+2. [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](reports/CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md) — 현재 구현과 대조한 최종 필터링 판정
 3. [CONSOLIDATED_FINDINGS.md](reports/CONSOLIDATED_FINDINGS.md) — 정확한 raw ID와 원래 CF 통합 기록 감사
 4. 필요에 따라 권고안, 테스트, 미결 질문과 raw 문서를 확인
 
@@ -46,8 +46,8 @@
 
 | 파일 | 상태 | 역할 |
 |---|---|---|
-| [CONCEPT_VALIDITY_REVIEW.md](reports/CONCEPT_VALIDITY_REVIEW.md) | **컨셉 리뷰 완결본** | 코드 상태와 분리해 기능 목적부터 691개 raw 의견의 30개 통합 쟁점까지 독립적으로 설명 |
-| [CUBRID_FIT_FILTER_FEATURE.md](reports/CUBRID_FIT_FILTER_FEATURE.md) | **최신·최종** | 기능 브랜치 `feature/CBRD-26246-develop` 기준 CF-01~CF-30 최종 판정과 코드 근거 |
+| [CODEX_SPEC_REVIEW_CONCEPT_VALIDITY.md](reports/CODEX_SPEC_REVIEW_CONCEPT_VALIDITY.md) | **컨셉 리뷰 완결본** | 코드 상태와 분리해 기능 목적부터 691개 raw 의견의 30개 통합 쟁점까지 독립적으로 설명 |
+| [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](reports/CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md) | **최신·최종** | 기능 브랜치 `feature/CBRD-26246-develop` 기준 CF-01~CF-30 최종 판정과 코드 근거 |
 | [CUBRID_FIT_FILTER.md](reports/CUBRID_FIT_FILTER.md) | **과거 이력** | 기능 코드를 보기 전 local develop만 기준으로 작성한 초기 필터링. 최종 판정용이 아님 |
 | [REVIEW_SUMMARY.md](reports/REVIEW_SUMMARY.md) | 원본 리뷰 요약 | 최초 스펙 리뷰의 주요 결론, 심각도와 권고 방향 |
 | [CONSOLIDATED_FINDINGS.md](reports/CONSOLIDATED_FINDINGS.md) | 원본 통합본 | 여러 리뷰 관점을 CF-01~CF-30으로 병합한 상세 문제 제기. 원문 보존용 |
@@ -61,7 +61,7 @@
 ```text
 최초 스펙 리뷰
   └─ CONSOLIDATED_FINDINGS.md (CF-01~CF-30 원문)
-       ├─ CONCEPT_VALIDITY_REVIEW.md (코드 비참조·사람이 독립적으로 읽는 완결본)
+       ├─ CODEX_SPEC_REVIEW_CONCEPT_VALIDITY.md (코드 비참조·사람이 독립적으로 읽는 완결본)
        ├─ REVIEW_SUMMARY.md
        ├─ RECOMMENDED_SPEC_CHANGES.md
        ├─ TEST_SCENARIOS.md
@@ -69,7 +69,7 @@
 
 코드 대조 필터링
   ├─ CUBRID_FIT_FILTER.md          (develop-only 과거 이력)
-  └─ CUBRID_FIT_FILTER_FEATURE.md  (기능 브랜치 기준 최종본)
+  └─ CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md  (기능 브랜치 기준 최종본)
 ```
 
 필터링 과정에서도 원래 스펙 리뷰 내용은 삭제하지 않았다. CUBRID에 맞지 않거나 코드 결함이 아닌

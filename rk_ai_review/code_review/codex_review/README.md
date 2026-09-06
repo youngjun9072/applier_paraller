@@ -4,7 +4,7 @@
 
 팀에는 아래 두 파일만 공유하면 된다.
 
-1. **[최종보고서.md](최종보고서.md)** — 실제 리뷰 본문
+1. **[CODEX_CODE_REVIEW_FINAL.md](CODEX_CODE_REVIEW_FINAL.md)** — 실제 리뷰 본문
 2. **이 README** — 문서 범위 안내
 
 `작업지시.md`와 `reports/` 전체는 재검증·이력 추적용 내부 자료다. 팀원이 finding의 판정 근거를
@@ -14,7 +14,7 @@
 
 | 파일 | 역할 | 읽는 경우 |
 |---|---|---|
-| `최종보고서.md` | 독립형 최종 코드 리뷰 | 항상 먼저 읽음 |
+| `CODEX_CODE_REVIEW_FINAL.md` | 독립형 최종 코드 리뷰 | 항상 먼저 읽음 |
 | `작업지시.md` | 대상 branch, 페르소나, LSP, 필터링·보존 규칙 | 내부 감사용, 일반 공유 제외 |
 | `reports/E2E_FINDING_WORKSHEETS.md` | 후보별 최소 입력과 master/log/applier/slave 상세 | 특정 finding을 재현·테스트할 때 |
 | `reports/CANDIDATE_AUDIT.md` | 확정/조건부/develop 기존/기각 수량과 근거 | 왜 16건이 10건으로 바뀌었는지 확인할 때 |

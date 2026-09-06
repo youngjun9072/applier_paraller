@@ -1,6 +1,6 @@
 # CUBRID HA 복제 키 사용자 스펙 권고 변경안
 
-> **후속 필터링 주의:** 아래 권고는 코드 확인 전 작성한 원안을 보존한 것이다. 실제 기능 구현에 맞는지와 과도한 요구 여부는 [CUBRID_FIT_FILTER_FEATURE.md](CUBRID_FIT_FILTER_FEATURE.md)의 CF별 판정을 먼저 적용한다.
+> **후속 필터링 주의:** 아래 권고는 코드 확인 전 작성한 원안을 보존한 것이다. 실제 기능 구현에 맞는지와 과도한 요구 여부는 [CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md](CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md)의 CF별 판정을 먼저 적용한다.
 
 ## 1. 결론
 

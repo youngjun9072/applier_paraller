@@ -26,7 +26,7 @@ PM, DBA, 최종 사용자 페르소나는 이번 스펙 적합성 판정에 사�
 - 후속 수정: `44468ed73` (`[CBRD-26589] SBR 로그 복제 버그 수정 및 checksumdb 수정`)
 - 별도 worktree: `/home/youngjun/Workspace/cubrid-cbrd26246`
 
-기존 `/home/youngjun/Workspace/cubrid`의 develop 작업 트리는 건드리지 않는다. 이전 develop-only 판정은 `reports/CUBRID_FIT_FILTER.md`에 이력으로 보존하고, 최종 기능 대조 결과는 `reports/CUBRID_FIT_FILTER_FEATURE.md`에 기록한다.
+기존 `/home/youngjun/Workspace/cubrid`의 develop 작업 트리는 건드리지 않는다. 이전 develop-only 판정은 `reports/CUBRID_FIT_FILTER.md`에 이력으로 보존하고, 최종 기능 대조 결과는 `reports/CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md`에 기록한다.
 
 ## LSP 사용
 
@@ -50,7 +50,7 @@ PM, DBA, 최종 사용자 페르소나는 이번 스펙 적합성 판정에 사�
 
 ## 산출 방식
 
-최종 결과는 `reports/CUBRID_FIT_FILTER_FEATURE.md`에 CF-01부터 CF-30까지 기록한다. 각 항목은 원래 제목과 요지를 보존하고 다음을 포함한다.
+최종 결과는 `reports/CODEX_SPEC_REVIEW_CUBRID_FIT_FILTER_FEATURE.md`에 CF-01부터 CF-30까지 기록한다. 각 항목은 원래 제목과 요지를 보존하고 다음을 포함한다.
 
 - 판정
 - CUBRID 구현 근거
